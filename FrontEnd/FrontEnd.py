@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
 
-logo_path = "logo.PNG"
+logo_path = "FrontEnd\logo.PNG"
 bg_color  = "white"
 bg_color2 = "lightgray"
 skyblue = "#3bc3f1"
