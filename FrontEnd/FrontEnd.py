@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
 
 logo_path = "FrontEnd\logo.PNG"
+search_icon_path = "FrontEnd\search_icon.PNG"
 bg_color  = "white"
 bg_color2 = "lightgray"
 skyblue = "#3bc3f1"
@@ -53,36 +54,67 @@ class Window:
         #Create the workflow screen
         self.work_screen = TabFrame(self.main_frame, 2)
         
-        ##Create elements in tab 1
+        ##Create elements in tab 1, this will be the open tab upon logging in
         self.work_screen.tabs[0].tab_button.configure(text = "Records")
         self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
         self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, text="View My Payroll",
-                                        bg=skyblue, bd=0, foreground=bg_color, font=basic_font)
+                                        bg=skyblue, bd=0, foreground=bg_color, font=basic_font, 
+                                        command=lambda: Notice(self, "Under Development."))
         self.payroll_button.pack(padx=100, pady=(50, 10), expand=True, fill="both")
         self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, text="User Guide",
-                                        bg=skyblue, bd=0, foreground=bg_color, font=basic_font)
+                                        bg=skyblue, bd=0, foreground=bg_color, font=basic_font, 
+                                        command=lambda: Notice(self, "Under Development."))
         self.user_guide_button.pack(padx=100, pady=(10, 50), expand=True, fill="both")
+        self.work_screen.tabs[0].show_body()
         
         ##Create elements in tab 2
         self.work_screen.tabs[1].tab_button.configure(text = "Employees")
         self.work_screen.tabs[1].body_frame = TwoColumnFrame(self.work_screen.body_frame)
         self.work_screen.tabs[1].hide_body()
         
-        ###Left
-        self.emp_box = tk.Listbox(self.work_screen.tabs[1].body_frame.left_frame, bd=0, bg=bg_color2)
+        ###Tab 2 Left
+        self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2)
+        self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,10))
+        self.listbox_frame.pack_propagate(0)
+        self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font)
+        self.emp_search_field.bind("<KeyRelease>", self.search_keyrelease)
+        self.emp_search_field.pack(side='top', fill='both', padx=10, pady=(10,0))
+        self.search_pic = ImageTk.PhotoImage(Image.open(search_icon_path).resize((25, 25)))
+        self.search_pic_container = tk.Label(self.emp_search_field, image=self.search_pic, bd=0)
+        self.search_pic_container.pack(side='right', fill='both')
+        self.emp_box = tk.Listbox(self.listbox_frame, bd=0, bg=bg_color2, activestyle='none', font=basic_font, 
+                                    selectbackground=skyblue, highlightcolor=bg_color2, highlightbackground=bg_color2, 
+                                    highlightthickness=10, selectforeground='black')
+        self.emp_box_scroller = tk.Scrollbar(self.emp_box, command=self.emp_box.yview)
+        self.emp_box.config(yscrollcommand = self.emp_box_scroller.set)
+        self.emp_box_scroller.pack(side='right', fill='both')
+        self.emp_box.bind("<<ListboxSelect>>", self.listbox_select)
         self.emp_box.pack(fill="both", expand=True)
         self.emp_box.pack_propagate(0)
-        self.emp_search_field = tk.Entry(self.emp_box, bd=0, bg=bg_color, font=basic_font)
-        self.emp_search_field.pack(side='top', fill='both', padx=10, pady=10)
+        self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)
+        self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
+        self.manage_emp_frame.pack_propagate(0)
+        self.emp_add_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text="  Add ",
+                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))
+        self.emp_add_btn.pack(side='left', expand=True, fill='both')
+        self.emp_edit_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text=" Edit ",
+                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))
+        self.emp_edit_btn.pack(side='left', expand=True, fill='both', padx=10)
+        self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text="Delete",
+                                            font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))
+        self.emp_delete_btn.pack(side='left', expand=True, fill='both')
+        self.full_list = request_employees()
+        self.visible_list = request_employees()
+        self.update_search_listbox()
 
-        ###Right
+        ###Tab 2 Right
         self.emp_pic = ImageTk.PhotoImage(Image.open(logo_path).resize((100, 100)))
         self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,
                                           image=self.emp_pic, borderwidth=2, relief="groove")
         self.emp_pic_container.pack(side="top", pady=25)
         self.emp_name_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,
-                                       bg=bg_color, text="Employee: Alex")
+                                       bg=bg_color, text="Employee:")
         self.emp_name_label.pack(pady=5)
         self.emp_salary_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,
                                          bg=bg_color, text="Salary: $0")
@@ -95,13 +127,36 @@ class Window:
         
     def exit(self):
         self.destroy()
-        
-    def create_popup(self, message):
-        popup = Notice(self, message)
-        
+    
     def login(self):
-        self.login_screen.hide()
-        self.work_screen.show()
+        if verify_login(self.username_field.get(), self.password_field.get()):
+            self.login_screen.hide()
+            self.work_screen.show()
+        else:
+            popup = Notice(self, "Incorrect username or password.")
+    
+    def search_keyrelease(self, event):
+        search_string = event.widget.get()
+        self.visible_list = []
+        for i in self.full_list:
+            if search_string.lower()[:len(search_string)] == i.lower()[:len(search_string)]:
+                self.visible_list.append(i)
+        self.update_search_listbox()
+    
+    def listbox_select(self, event):
+        selection = event.widget.curselection()
+        if selection:
+            index = selection[0]
+            data = event.widget.get(index)
+            self.emp_name_label.configure(text="Employee: " + data)
+        else:
+            self.emp_name_label.configure(text="")
+
+    def update_search_listbox(self):
+        self.emp_box.delete(0,'end')
+        for i in self.visible_list:
+            self.emp_box.insert(0, i)
+            self.emp_box.itemconfig(0, {'bg':'white'})
 
 
 class Widget(ABC):
@@ -169,7 +224,7 @@ class Tab(Widget):
         self.parent = frame
         self.body_frame = None
         self.tab_frame = tk.Frame(frame.tabs_frame, bg=bg_color)
-        self.tab_button = tk.Button(self.tab_frame, text="Tab", bg=bg_color, font=title_font, bd=0,
+        self.tab_button = tk.Button(self.tab_frame, text="Tab", bg=bg_color2, font=title_font, bd=0,
                                     command=lambda: self.parent.focus_tab(self))
         self.tab_button.pack(fill="both", expand=True)
         self.show()
@@ -186,12 +241,14 @@ class Tab(Widget):
             self.body_frame.pack(fill="both", expand=True)
         elif isinstance(self.body_frame, TwoColumnFrame):
             self.body_frame.show()
+        self.tab_button.configure(bg=bg_color)
             
     def hide_body(self):
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack_forget()
         elif isinstance(self.body_frame, TwoColumnFrame):
             self.body_frame.hide()
+        self.tab_button.configure(bg=bg_color2)
 
 
 class Popup:
@@ -199,7 +256,7 @@ class Popup:
     def __init__(self, master, message):
         self.master = master
         self.popup = tk.Toplevel(master.root)
-        self.popup.width = 300
+        self.popup.width = 350
         self.popup.height = 100
         self.popup.geometry("{}x{}+{}+{}".format(self.popup.width, self.popup.height,
                                                 int(self.master.root.winfo_screenwidth()/2 - self.popup.width/2),
@@ -215,6 +272,7 @@ class Popup:
         
         self.popup.message_label = tk.Label(self.popup.main_frame, text=message, bg=bg_color, font=basic_font)
         self.popup.message_label.pack(side="top", pady=(5, 0))
+        self.popup.message_label.pack_propagate(0)
         
     def close(self):
         self.popup.destroy()
@@ -246,7 +304,28 @@ class Confirmation(Popup):
     def no(self):
         self.close()
 
+#####CONTROLLER#####
+def verify_login(username, password):
+    return True
 
+def request_employees() : 
+    return sorted(["Alex", "Elliot", "Shayne", "Michael", "Kaleb", "Sam"] *5, reverse=True)
+
+def get_employee(ID) :
+    return 100
+
+def export_payroll() :
+    return
+
+def update_employee(ID, data) : 
+    return True
+
+def remove_employee(ID) :
+    return True
+
+def verify_permission(user, action) :
+    return True
+
+###MAIN###
 window = Window()
 window.run()
-
