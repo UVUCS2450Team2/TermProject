@@ -1,8 +1,10 @@
-import FrontEnd
+from FrontEnd.FrontEnd import *
 
-def main(self):
+def main():
     """
     Insert description here
     """
-    window = FrontEnd.Window
+    window = Window()
     window.run()
+
+#main()
