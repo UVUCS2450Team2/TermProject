@@ -94,16 +94,25 @@ class Window:
         self.work_screen.tabs[0].tab_button.configure(text = "Records")
         self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
-        self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((775, 200)))
+        self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
         self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.payroll_button_image,
                                         bg=bg_color, bd=0, foreground=bg_color, activebackground=bg_color,
                                         command=lambda: Notice(self, "Under Development."))
         self.payroll_button.pack(padx=100, pady=(50, 10), expand=True, fill="both")
-        self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((775, 200)))
+        self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
         self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.user_guide_button_image,
                                         bg=bg_color, bd=0, foreground=bg_color, activebackground=bg_color, 
                                         command=lambda: Notice(self, "Under Development."))
         self.user_guide_button.pack(padx=100, pady=(10, 50), expand=True, fill="both")
+
+        self.corner5_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
+        self.corner5_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner5_image, bg=bg_color, bd=0)
+        self.corner5_container.pack(side="left")
+
+        self.corner6_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
+        self.corner6_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner6_image, bg=bg_color, bd=0)
+        self.corner6_container.pack(side="right")
+
         self.work_screen.tabs[0].show_body()
         
         ## Create elements in tab 2
