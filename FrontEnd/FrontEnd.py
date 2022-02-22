@@ -11,7 +11,7 @@ payroll_button_path = folder_path+"payroll_button.PNG"
 user_guide_button_path = folder_path+"user_guide_button.PNG"
 corner_image_path = folder_path+"corner.PNG"
 bg_color  = "white"
-bg_color2 = "lightgray"
+bg_color2 = "#D7D8D9"
 skyblue = "#3bc3f1"
 title_font = ("Arial Rounded MT Bold", 14)
 button_font = ("Arial Rounded MT Bold", 30)
@@ -329,7 +329,16 @@ class Tab(Widget):
         self.parent = frame
         self.body_frame = None
         self.tab_frame = tk.Frame(frame.tabs_frame, bg=bg_color)
-        self.tab_button = tk.Button(self.tab_frame, text="Tab", bg=bg_color2, font=title_font, bd=0,
+
+        self.corner_left_image = ImageTk.PhotoImage(Image.open(corner_image_path).resize((35, 35)))
+        self.corner_left_container = tk.Label(self.tab_frame, image=self.corner_left_image, bg=bg_color, bd=0)
+        self.corner_left_container.pack(side="left", anchor="nw")
+
+        self.corner_right_image = ImageTk.PhotoImage(Image.open(corner_image_path).resize((35, 35)).rotate(270))
+        self.corner_right_container = tk.Label(self.tab_frame, image=self.corner_right_image, bg=bg_color, bd=0)
+        self.corner_right_container.pack(side="right", anchor="ne")
+
+        self.tab_button = tk.Button(self.tab_frame, text="Tab", bg=bg_color2, font=title_font, bd=0, activebackground=bg_color2,
                                     command=lambda: self.parent.focus_tab(self))
         self.tab_button.pack(fill="both", expand=True)
         self.show()
@@ -351,11 +360,15 @@ class Tab(Widget):
         """
         Unknown
         """
+        self.tab_button.pack_forget()
+        self.corner_left_container.pack(side="left", anchor="nw")
+        self.corner_right_container.pack(side="right", anchor="ne")
+        self.tab_button.pack(fill="both", expand=True)
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack(fill="both", expand=True)
         elif isinstance(self.body_frame, TwoColumnFrame):
             self.body_frame.show()
-        self.tab_button.configure(bg=bg_color)
+        self.tab_button.configure(bg=bg_color, activebackground=bg_color)
             
     def hide_body(self):
         """
@@ -366,6 +379,9 @@ class Tab(Widget):
         elif isinstance(self.body_frame, TwoColumnFrame):
             self.body_frame.hide()
         self.tab_button.configure(bg=bg_color2)
+        self.corner_left_container.pack_forget()
+        self.corner_right_container.pack_forget()
+        self.tab_button.configure(bg=bg_color2, activebackground=bg_color2)
 
 
 class Popup:
