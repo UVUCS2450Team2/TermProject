@@ -2,8 +2,9 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
 
-folder_path = "FrontEnd\\"
-logo_path = folder_path+"logo.PNG"
+folder_path = "FrontEnd\\Assets\\"
+logo_large_path = folder_path+"logo_large.PNG"
+logo_small_path = folder_path+"logo_small.PNG"
 search_icon_path = folder_path+"search_icon.PNG"
 login_button_path = folder_path+"login_button.PNG"
 payroll_button_path = folder_path+"payroll_button.PNG"
@@ -32,8 +33,10 @@ class Window:
                                                 int(self.root.winfo_screenheight()/2 - self.height/2)))
         self.root.configure(bg=bg_color2)
         self.root.title("EmpDat")
-        self.icon_image = tk.PhotoImage(file = logo_path)
-        self.root.iconphoto(False, self.icon_image)
+        self.icon_image_large = tk.PhotoImage(file=logo_large_path)
+        self.icon_image_small = tk.PhotoImage(file=logo_small_path)
+        self.root.iconphoto(False, self.icon_image_small)
+        self.root.wm_minsize(self.width, self.height)
         
         self.main_frame = tk.Frame(self.root, bg=bg_color)
         self.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
@@ -52,8 +55,8 @@ class Window:
         self.password_label.pack()
         self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*")
         self.password_field.pack()
-        self.login_pic = ImageTk.PhotoImage(Image.open(logo_path).resize((350, 350)))
-        self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0)
+        self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))
+        self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=bg_color)
         self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         # Create the login button from image resource
         self.login_button = tk.Button(self.login_frame, image=self.login_button_pic, bg=bg_color, activebackground=bg_color, bd=0, command=self.login)
         self.login_button.pack(pady=10, expand=True, fill="both")
@@ -121,7 +124,7 @@ class Window:
         self.update_search_listbox()
 
         ### Tab 2 Right
-        self.emp_pic = ImageTk.PhotoImage(Image.open(logo_path).resize((100, 100)))
+        self.emp_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((100, 100)))
         self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,
                                           image=self.emp_pic, borderwidth=2, relief="groove")
         self.emp_pic_container.pack(side="top", pady=25)
@@ -348,9 +351,10 @@ class Popup:
         self.popup.geometry("{}x{}+{}+{}".format(self.popup.width, self.popup.height,
                                                 int(self.master.root.winfo_screenwidth()/2 - self.popup.width/2),
                                                 int(self.master.root.winfo_screenheight()/2 - self.popup.height/2)))
+        self.popup.resizable(width=False, height=False)
         self.popup.configure(bg=bg_color2)
         self.popup.title("EmpDat")
-        self.popup.icon_image = tk.PhotoImage(file = logo_path)
+        self.popup.icon_image = tk.PhotoImage(file = logo_small_path)
         self.popup.iconphoto(False, self.popup.icon_image)
         
         self.popup.main_frame = tk.Frame(self.popup, bg=bg_color)
