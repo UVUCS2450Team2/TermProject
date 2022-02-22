@@ -184,7 +184,7 @@ class BackendImplementation:
         
 
     def SetActiveUser(self, user):
-        self.SetActiveUser = user
+        self.SetActiveUser = self.USER_DICT[user]
 
 
     def AddEmployee(self, emp):
