@@ -1,3 +1,4 @@
+from ctypes import WinDLL
 import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
@@ -156,16 +157,41 @@ class Window:
         self.update_search_listbox()        #### Update the search box based on the entered information
 
         ### Tab 2 Right
+        self.indent_amount = 50
+        self.entry_length = 35
         self.emp_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((100, 100)))       #### This should later call the backend to provide the employee's photo
         self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,      #### Put the employee photo in a container on the right side of the employees tab
                                           image=self.emp_pic, borderwidth=2, relief="groove")
         self.emp_pic_container.pack(side="top", pady=25)
-        self.emp_name_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,    #### Add a feild for the employee's name
-                                       bg=bg_color, text="Employee:")
-        self.emp_name_label.pack(pady=5)
-        self.emp_salary_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,  #### Add a feild for the employee's salary
-                                         bg=bg_color, text="Salary: $0")
-        self.emp_salary_label.pack(pady=5)
+
+        self.work_screen.tabs[1].body_frame.right_frame.configure(bd=self.indent_amount)
+
+        self.emp_name = ""
+        self.emp_name_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
+        self.emp_name_label_container.pack(pady=5, fill="x")
+        self.emp_name_label = tk.Label(self.emp_name_label_container, font=basic_font,    #### Add a feild for the employee's name
+                                       bg=bg_color2, text="Employee:")
+        self.emp_name_label.pack(side="left")
+        self.emp_name_entry = tk.Entry(self.emp_name_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_name, width=self.entry_length)
+        self.emp_name_entry.pack(side="left", fill="x")
+
+        self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
+        self.emp_salary_label_container.pack(pady=5, fill="x")
+        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a feild for the employee's payment type
+                                         bg=bg_color2, text="Payment type:")
+        self.emp_salary_label.pack(side="left")
+
+        self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
+        self.emp_payment_label_container.pack(pady=5, fill="x")
+        self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a feild for the employee's pay amount
+                                         bg=bg_color2, text="Amount: $0")
+        self.emp_payment_label.pack(side="left")
+
+        self.emp_address_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
+        self.emp_address_label_container.pack(pady=5, fill="x")
+        self.emp_address_label = tk.Label(self.emp_address_label_container, font=basic_font,  #### Add a feild for the employee's address
+                                         bg=bg_color2, text="Address:")
+        self.emp_address_label.pack(side="left")
         
         self.work_screen.hide()     #### Hide the tab since it is not the first tab
         
@@ -210,7 +236,8 @@ class Window:
         if selection:
             index = selection[0]
             data = event.widget.get(index)
-            self.emp_name_label.configure(text="Employee: " + data)     # Update the employee information on the right tab
+            self.emp_name_entry.delete(0, last="end")
+            self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab   
         else:
             self.emp_name_label.configure(text="")
 
