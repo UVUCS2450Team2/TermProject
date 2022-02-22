@@ -283,8 +283,14 @@ class TabFrame(Widget):
 
 
 class Tab(Widget):
+    """
+    This class creates and controls the tab widget
+    """
     
     def __init__(self, frame):
+        """
+        Initialize the tab
+        """
         self.parent = frame
         self.body_frame = None
         self.tab_frame = tk.Frame(frame.tabs_frame, bg=bg_color)
@@ -294,13 +300,22 @@ class Tab(Widget):
         self.show()
         
     def show(self):
+        """
+        Show the tab
+        """
         self.tab_frame.pack(side="left", fill="both", expand=True)
         self.tab_frame.pack_propagate(0)
     
     def hide(self):
+        """
+        Hide the tab
+        """
         self.tab_frame.pack_forget()
         
     def show_body(self):
+        """
+        Unknown
+        """
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack(fill="both", expand=True)
         elif isinstance(self.body_frame, TwoColumnFrame):
@@ -308,6 +323,9 @@ class Tab(Widget):
         self.tab_button.configure(bg=bg_color)
             
     def hide_body(self):
+        """
+        Unknown
+        """
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack_forget()
         elif isinstance(self.body_frame, TwoColumnFrame):
@@ -316,8 +334,13 @@ class Tab(Widget):
 
 
 class Popup:
-    
+    """
+    This class creates and controls popup messages in the program
+    """
     def __init__(self, master, message):
+        """
+        Initialize and display the popup
+        """
         self.master = master
         self.popup = tk.Toplevel(master.root)
         self.popup.width = 350
@@ -339,12 +362,20 @@ class Popup:
         self.popup.message_label.pack_propagate(0)
         
     def close(self):
+        """
+        Close the popup
+        """
         self.popup.destroy()
 
 
 class Notice(Popup):
-    
+    """
+    This class creates a notice popup with a mesage and acknowledgement button
+    """
     def __init__(self, master, message):
+        """
+        Initialize and show the notice popup
+        """
         super().__init__(master, message)
         self.popup.okay_button = tk.Button(self.popup.main_frame, text="Okay", bg=skyblue, bd=0,
                                       foreground=bg_color, font=basic_font, command=self.close)
@@ -352,8 +383,13 @@ class Notice(Popup):
 
 
 class Confirmation(Popup):
-    
+    """
+    This class creates a confirmation popup with two option, yes or no
+    """
     def __init__(self, master, message):
+        """
+        Initialize and show the confirmation popup
+        """
         super().__init__(master, message)
         self.popup.yes_button = tk.Button(self.popup.main_frame, text="Yes",
                                           bg=skyblue, bd=0, foreground=bg_color, font=basic_font)
@@ -363,12 +399,19 @@ class Confirmation(Popup):
         self.popup.no_button.pack(side="right", padx=(5, 90), pady=5)
 
     def yes(self):
+        """
+        Commands to execute if the confirmation is positive
+        """
         self.close()
     
     def no(self):
+        """
+        Commands to execute if the confirmation is negative
+        """
         self.close()
 
 #####CONTROLLER#####
+# This section should be imported from the interface.py
 def verify_login(username, password):
     return True
 
@@ -391,5 +434,6 @@ def verify_permission(user, action) :
     return True
 
 ###MAIN###
+# This section will exist in a seperate file, main.py
 window = Window()
 window.run()
