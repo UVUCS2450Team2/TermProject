@@ -369,6 +369,7 @@ class Tab(Widget):
         elif isinstance(self.body_frame, TwoColumnFrame):
             self.body_frame.show()
         self.tab_button.configure(bg=bg_color, activebackground=bg_color)
+
             
     def hide_body(self):
         """
@@ -484,8 +485,3 @@ def remove_employee(ID) :
 
 def verify_permission(user, action) :
     return True
-
-###MAIN###
-# This section will exist in a seperate file, main.py
-window = Window()
-window.run()
