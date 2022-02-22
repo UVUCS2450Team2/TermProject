@@ -27,132 +27,132 @@ class Window:
         Initial setup of all the necessary frames for the GUI
         """
         # This section creates the basic window with a light gray background
-        self.root = tk.Tk()
-        self.width = 1000
+        self.root = tk.Tk() ## Create the root window
+        self.width = 1000   ## Define the root window's dimensions
         self.height = 600
         self.root.geometry("{}x{}+{}+{}".format(self.width, self.height,
                                                 int(self.root.winfo_screenwidth()/2 - self.width/2),
                                                 int(self.root.winfo_screenheight()/2 - self.height/2)))
-        self.root.configure(bg=bg_color2)
-        self.root.title("EmpDat")
-        self.icon_image_large = tk.PhotoImage(file=logo_large_path)
+        self.root.configure(bg=bg_color2)   ## Define colors
+        self.root.title("EmpDat")           ## This is the title of the window which will show on the top bar
+        self.icon_image_large = tk.PhotoImage(file=logo_large_path)     ## Give the window a program icon
         self.icon_image_small = tk.PhotoImage(file=logo_small_path)
         self.root.iconphoto(False, self.icon_image_small)
-        self.root.wm_minsize(self.width, self.height)
+        self.root.wm_minsize(self.width, self.height)       ## Limit the window so that it cannot be made smaller than its original size
         
         # This section creates the white frame that goes on top of the light gray background
-        self.main_frame = tk.Frame(self.root, bg=bg_color)
-        self.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
-        self.main_frame.pack_propagate(0)
+        self.main_frame = tk.Frame(self.root, bg=bg_color)  ## Create the main frame on the root
+        self.main_frame.pack(fill='both', expand=True, padx=10, pady=10)    ## Expand to fill the window, leaving a border
+        self.main_frame.pack_propagate(0)   ## Enable showing the frame
         
-        #Create the login screen
-        self.login_screen = TwoColumnFrame(self.main_frame)
-        self.login_frame = tk.Frame(self.login_screen.left_frame, bg=bg_color)
+        # Create the login screen
+        self.login_screen = TwoColumnFrame(self.main_frame)     ## Create the login screen from a two column frame class
+        self.login_frame = tk.Frame(self.login_screen.left_frame, bg=bg_color)  ## Create the left frame on the login screen frame
         self.login_frame.pack()
-        self.login_frame.place(relx=0.5, rely=0.5, anchor='c')
-        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font)     # Create the username label and button
+        self.login_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center the login frame on the left column
+        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font)     ## Create the username label and button
         self.username_label.pack()
         self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font)
         self.username_field.pack()
-        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font)     # Create the password label and button
+        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font)     ## Create the password label and button
         self.password_label.pack()
         self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*")
         self.password_field.pack()
-        self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))
-        self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=bg_color)
-        self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         # Create the login button from image resource
+        self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))     ## Load in the logo image
+        self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=bg_color)     ## Create a logo container on the right frame of the two column frame
+        self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         ## Create the login button from image resource
         self.login_button = tk.Button(self.login_frame, image=self.login_button_pic, bg=bg_color, activebackground=bg_color, bd=0, command=self.login)
         self.login_button.pack(pady=10, expand=True, fill="both")
         self.login_pic_container.pack()
-        self.login_pic_container.place(relx=0.5, rely=0.5, anchor='c')
+        self.login_pic_container.place(relx=0.5, rely=0.5, anchor='c')  ## Center the logo in the right frame
 
-        # Add rounded corners to login screen
-        self.base_corner_image = Image.open(corner_image_path).resize((35, 35))
+        ## Add rounded corners to login screen
+        self.base_corner_image = Image.open(corner_image_path).resize((35, 35))     ### Load in the base corner image
 
         self.corner1_image = ImageTk.PhotoImage(self.base_corner_image)
-        self.corner1_container = tk.Label(self.login_screen.left_frame, image=self.corner1_image, bg=bg_color, bd=0)
+        self.corner1_container = tk.Label(self.login_screen.left_frame, image=self.corner1_image, bg=bg_color, bd=0)    ### Place corner1
         self.corner1_container.pack(side="top", anchor="nw")
 
         self.corner2_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
-        self.corner2_container = tk.Label(self.login_screen.left_frame, image=self.corner2_image, bg=bg_color, bd=0)
+        self.corner2_container = tk.Label(self.login_screen.left_frame, image=self.corner2_image, bg=bg_color, bd=0)    ### Rotate and place corner2
         self.corner2_container.pack(side="bottom", anchor="sw")
 
         self.corner3_image = ImageTk.PhotoImage(self.base_corner_image.rotate(270))
-        self.corner3_container = tk.Label(self.login_screen.right_frame, image=self.corner3_image, bg=bg_color, bd=0)
+        self.corner3_container = tk.Label(self.login_screen.right_frame, image=self.corner3_image, bg=bg_color, bd=0)   ### Rotate and place corner3
         self.corner3_container.pack(side="top", anchor="ne")
 
         self.corner4_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
-        self.corner4_container = tk.Label(self.login_screen.right_frame, image=self.corner4_image, bg=bg_color, bd=0)
+        self.corner4_container = tk.Label(self.login_screen.right_frame, image=self.corner4_image, bg=bg_color, bd=0)   ### Rotate and place corner4
         self.corner4_container.pack(side="bottom", anchor="se")
 
-        self.login_screen.show()
+        self.login_screen.show()    ## show the login screen frame
         
         # Create the workflow screen
         self.work_screen = TabFrame(self.main_frame, 2)
         
         ## Create elements in tab 1, this will be the open tab upon logging in
         self.work_screen.tabs[0].tab_button.configure(text = "Records")
-        self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)
+        self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)    ### Configure the Records tab name and attributes
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
-        self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.payroll_button_image,
+        self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
                                         bg=bg_color, bd=0, foreground=bg_color, activebackground=bg_color,
                                         command=lambda: Notice(self, "Under Development."))
         self.payroll_button.pack(padx=100, pady=(50, 10), expand=True, fill="both")
         self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
-        self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.user_guide_button_image,
+        self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
                                         bg=bg_color, bd=0, foreground=bg_color, activebackground=bg_color, 
                                         command=lambda: Notice(self, "Under Development."))
         self.user_guide_button.pack(padx=100, pady=(10, 50), expand=True, fill="both")
 
         self.corner5_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
-        self.corner5_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner5_image, bg=bg_color, bd=0)
+        self.corner5_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner5_image, bg=bg_color, bd=0) ### Add rounded corners to the body frame
         self.corner5_container.pack(side="left")
 
         self.corner6_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
         self.corner6_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner6_image, bg=bg_color, bd=0)
         self.corner6_container.pack(side="right")
 
-        self.work_screen.tabs[0].show_body()
+        self.work_screen.tabs[0].show_body()    ### Show the tab 1 body
         
         ## Create elements in tab 2
-        self.work_screen.tabs[1].tab_button.configure(text = "Employees")
-        self.work_screen.tabs[1].body_frame = TwoColumnFrame(self.work_screen.body_frame)
-        self.work_screen.tabs[1].hide_body()
+        self.work_screen.tabs[1].tab_button.configure(text = "Employees")                   ### Configure the Employees tab name and attributes
+        self.work_screen.tabs[1].body_frame = TwoColumnFrame(self.work_screen.body_frame)   ### Create the employees page out of a two column frame 
+        self.work_screen.tabs[1].hide_body()    ### Hide the employees tab because the default tab is the first tab
         
         ### Tab 2 Left
-        self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2)
+        self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2) #### Create a listbox frame on the left frame of the employees tab
         self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,10))
         self.listbox_frame.pack_propagate(0)
-        self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font)
+        self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font)    #### Create a search feild and attach it to the listbox
         self.emp_search_field.bind("<KeyRelease>", self.search_keyrelease)
         self.emp_search_field.pack(side='top', fill='both', padx=10, pady=(10,0))
         self.search_pic = ImageTk.PhotoImage(Image.open(search_icon_path).resize((25, 25)))
-        self.search_pic_container = tk.Label(self.emp_search_field, image=self.search_pic, bd=0)
+        self.search_pic_container = tk.Label(self.emp_search_field, image=self.search_pic, bd=0)    #### Add a search icon to the search field
         self.search_pic_container.pack(side='right', fill='both')
         self.emp_box = tk.Listbox(self.listbox_frame, bd=0, bg=bg_color2, activestyle='none', font=basic_font, 
-                                    selectbackground=skyblue, highlightcolor=bg_color2, highlightbackground=bg_color2, 
+                                    selectbackground=skyblue, highlightcolor=bg_color2, highlightbackground=bg_color2,  #### Create a employee listbox and attach it to the listbox frame
                                     highlightthickness=10, selectforeground='black')
-        self.emp_box_scroller = tk.Scrollbar(self.emp_box, command=self.emp_box.yview)
-        self.emp_box.config(yscrollcommand = self.emp_box_scroller.set)
+        self.emp_box_scroller = tk.Scrollbar(self.emp_box, command=self.emp_box.yview)      #### Create a scroll bar and attach it to the employee listbox
+        self.emp_box.config(yscrollcommand = self.emp_box_scroller.set)     #### Configure the scroll bar settings
         self.emp_box_scroller.pack(side='right', fill='both')
         self.emp_box.bind("<<ListboxSelect>>", self.listbox_select)
         self.emp_box.pack(fill="both", expand=True)
         self.emp_box.pack_propagate(0)
-        self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)
+        self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)    #### Create a new frame for add, edit, and delete buttons
         self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
         self.manage_emp_frame.pack_propagate(0)
         self.emp_add_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text="  Add ",
-                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))
+                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Add button on employee management frame
         self.emp_add_btn.pack(side='left', expand=True, fill='both')
         self.emp_edit_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text=" Edit ",
-                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))
+                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Edit button on employee management frame
         self.emp_edit_btn.pack(side='left', expand=True, fill='both', padx=10)
         self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text="Delete",
-                                            font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))
+                                            font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Delete button on employee management frame
         self.emp_delete_btn.pack(side='left', expand=True, fill='both')
-        self.full_list = request_employees()
-        self.visible_list = request_employees()
+        self.full_list = request_employees()        #### Populate the listbox with the full list of employee initially
+        self.visible_list = request_employees()     #### 
         self.update_search_listbox()
 
         ### Tab 2 Right
@@ -358,7 +358,7 @@ class Tab(Widget):
         
     def show_body(self):
         """
-        Unknown
+        A better way to show the tab that puts everything back where it was
         """
         self.tab_button.pack_forget()
         self.corner_left_container.pack(side="left", anchor="nw")
@@ -373,7 +373,7 @@ class Tab(Widget):
             
     def hide_body(self):
         """
-        Unknown
+        A better way to hide the tab
         """
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack_forget()
