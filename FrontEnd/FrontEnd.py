@@ -9,6 +9,7 @@ search_icon_path = folder_path+"search_icon.PNG"
 login_button_path = folder_path+"login_button.PNG"
 payroll_button_path = folder_path+"payroll_button.PNG"
 user_guide_button_path = folder_path+"user_guide_button.PNG"
+corner_image_path = folder_path+"corner.PNG"
 bg_color  = "white"
 bg_color2 = "lightgray"
 skyblue = "#3bc3f1"
@@ -25,6 +26,7 @@ class Window:
         """
         Initial setup of all the necessary frames for the GUI
         """
+        # This section creates the basic window with a light gray background
         self.root = tk.Tk()
         self.width = 1000
         self.height = 600
@@ -38,6 +40,7 @@ class Window:
         self.root.iconphoto(False, self.icon_image_small)
         self.root.wm_minsize(self.width, self.height)
         
+        # This section creates the white frame that goes on top of the light gray background
         self.main_frame = tk.Frame(self.root, bg=bg_color)
         self.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         self.main_frame.pack_propagate(0)
@@ -62,6 +65,26 @@ class Window:
         self.login_button.pack(pady=10, expand=True, fill="both")
         self.login_pic_container.pack()
         self.login_pic_container.place(relx=0.5, rely=0.5, anchor='c')
+
+        # Add rounded corners to login screen
+        self.base_corner_image = Image.open(corner_image_path).resize((35, 35))
+
+        self.corner1_image = ImageTk.PhotoImage(self.base_corner_image)
+        self.corner1_container = tk.Label(self.login_screen.left_frame, image=self.corner1_image, bg=bg_color, bd=0)
+        self.corner1_container.pack(side="top", anchor="nw")
+
+        self.corner2_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
+        self.corner2_container = tk.Label(self.login_screen.left_frame, image=self.corner2_image, bg=bg_color, bd=0)
+        self.corner2_container.pack(side="bottom", anchor="sw")
+
+        self.corner3_image = ImageTk.PhotoImage(self.base_corner_image.rotate(270))
+        self.corner3_container = tk.Label(self.login_screen.right_frame, image=self.corner3_image, bg=bg_color, bd=0)
+        self.corner3_container.pack(side="top", anchor="ne")
+
+        self.corner4_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
+        self.corner4_container = tk.Label(self.login_screen.right_frame, image=self.corner4_image, bg=bg_color, bd=0)
+        self.corner4_container.pack(side="bottom", anchor="se")
+
         self.login_screen.show()
         
         # Create the workflow screen
