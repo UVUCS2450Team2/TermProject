@@ -152,65 +152,65 @@ class Window:
                                             font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Delete button on employee management frame
         self.emp_delete_btn.pack(side='left', expand=True, fill='both')
         self.full_list = request_employees()        #### Populate the listbox with the full list of employee initially
-        self.visible_list = request_employees()     #### 
-        self.update_search_listbox()
+        self.visible_list = request_employees()     #### Show the current requested employees
+        self.update_search_listbox()        #### Update the search box based on the entered information
 
         ### Tab 2 Right
-        self.emp_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((100, 100)))
-        self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,
+        self.emp_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((100, 100)))       #### This should later call the backend to provide the employee's photo
+        self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,      #### Put the employee photo in a container on the right side of the employees tab
                                           image=self.emp_pic, borderwidth=2, relief="groove")
         self.emp_pic_container.pack(side="top", pady=25)
-        self.emp_name_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,
+        self.emp_name_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,    #### Add a feild for the employee's name
                                        bg=bg_color, text="Employee:")
         self.emp_name_label.pack(pady=5)
-        self.emp_salary_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,
+        self.emp_salary_label = tk.Label(self.work_screen.tabs[1].body_frame.right_frame, font=basic_font,  #### Add a feild for the employee's salary
                                          bg=bg_color, text="Salary: $0")
         self.emp_salary_label.pack(pady=5)
         
-        self.work_screen.hide()
+        self.work_screen.hide()     #### Hide the tab since it is not the first tab
         
     def run(self):
         """
         Begins the program by running the main loop
         """
-        self.root.mainloop()
+        self.root.mainloop()    # Run the tk mainloop
         
     def exit(self):
         """
         Ends the program
         """
-        self.destroy()
+        self.destroy()      # When the user closes the program destroy the root window
     
     def login(self):
         """
         Verifies the user's login credentials. If the credentials are incorrect, show a warning notice. Otherwise, login the user.
         """
-        if verify_login(self.username_field.get(), self.password_field.get()):
-            self.login_screen.hide()
-            self.work_screen.show()
+        if verify_login(self.username_field.get(), self.password_field.get()):  # If the user enters correct credentials
+            self.login_screen.hide()    # Hide the login page
+            self.work_screen.show()     # Show the work screen
         else:
-            popup = Notice(self, "Incorrect username or password.")
+            popup = Notice(self, "Incorrect username or password.")     # Otherwise, tell the user they have entered the wrong credentials
     
     def search_keyrelease(self, event):
         """
         Updates the displayed employee list in the employee tab based on the current information entered in the search box.
         """
-        search_string = event.widget.get()
-        self.visible_list = []
+        search_string = event.widget.get()  # Get the current contents of the search box
+        self.visible_list = []      # Create an empty array that will be populated with employees that match the search
         for i in self.full_list:
             if search_string.lower()[:len(search_string)] == i.lower()[:len(search_string)]:
-                self.visible_list.append(i)
-        self.update_search_listbox()
+                self.visible_list.append(i)     # If an employee is found that matches the search, add it to the array
+        self.update_search_listbox()    # Update the search listbox with the list of found employee matching the search
     
     def listbox_select(self, event):
         """
-        Unknown
+        Updates the employee information on the right tab when an employee is selected in the left tab
         """
-        selection = event.widget.curselection()
+        selection = event.widget.curselection()     # When the user clicks on an employee
         if selection:
             index = selection[0]
             data = event.widget.get(index)
-            self.emp_name_label.configure(text="Employee: " + data)
+            self.emp_name_label.configure(text="Employee: " + data)     # Update the employee information on the right tab
         else:
             self.emp_name_label.configure(text="")
 
@@ -251,24 +251,24 @@ class TwoColumnFrame(Widget):
         """
         Initialize the left and right frames of the two column frame
         """
-        self.left_frame = tk.Frame(frame, bg=bg_color)
-        self.right_frame = tk.Frame(frame, bg=bg_color)
-        self.show()
+        self.left_frame = tk.Frame(frame, bg=bg_color)  # Create the left frame
+        self.right_frame = tk.Frame(frame, bg=bg_color) # Create the right frame
+        self.show()     # Show the created frames
         
     def show(self):
         """
         Show the two column frame in the window
         """
-        self.left_frame.pack(side="left", fill="both", expand=True)
-        self.left_frame.pack_propagate(0)
-        self.right_frame.pack(side="right", fill="both", expand=True)
-        self.right_frame.pack_propagate(0)
+        self.left_frame.pack(side="left", fill="both", expand=True)     # Left frame fills the left side of the window
+        self.left_frame.pack_propagate(0)                               # Enable the left frame
+        self.right_frame.pack(side="right", fill="both", expand=True)   # Right frame fills the right side of the window
+        self.right_frame.pack_propagate(0)                              # Enable the right frame
         
     def hide(self):
         """
         Hide the two column frame in the window
         """
-        self.left_frame.pack_forget()
+        self.left_frame.pack_forget()   # Disable both frames
         self.right_frame.pack_forget()
 
 
@@ -278,18 +278,18 @@ class TabFrame(Widget):
         """
         Initialize the tab frame
         """
-        self.tabs_frame = tk.Frame(frame, bg=bg_color, height=50)
-        self.body_frame = tk.Frame(frame, bg=bg_color)
+        self.tabs_frame = tk.Frame(frame, bg=bg_color, height=50)   # Create a tab frame
+        self.body_frame = tk.Frame(frame, bg=bg_color)  # Create a body frame to go with the tab
         self.tabs = []
-        for i in range(tab_count):
+        for i in range(tab_count):  # Add enough tabs for all the possible tabs
             self.add_tab()
-        self.show()
+        self.show()     # Show the created tab
     
     def show(self):
         """
         Shows the tab frame
         """
-        self.tabs_frame.pack(side='top', fill='both')
+        self.tabs_frame.pack(side='top', fill='both')   # Enable the tab and the tab body
         self.tabs_frame.pack_propagate(0)
         self.body_frame.pack(side='left', fill='both', expand=True)
         self.body_frame.pack_propagate(0)
@@ -298,23 +298,23 @@ class TabFrame(Widget):
         """
         Hides the tab frame
         """
-        self.tabs_frame.pack_forget()
+        self.tabs_frame.pack_forget()   # Disable tab and tab body
         self.body_frame.pack_forget()
             
     def add_tab(self):
         """
         Add an additional tab to the list of available tabs
         """
-        tab = Tab(self)
-        self.tabs.append(tab)
+        tab = Tab(self)         # Create a new tab
+        self.tabs.append(tab)   # Add the new tab to the list of tabs
         
     def focus_tab(self, clicked_tab):
         """
         Method for showing only the currently selected tab
         """
         for tab in self.tabs:
-            tab.hide_body()
-        clicked_tab.show_body()
+            tab.hide_body()         # First, hide all the tabs
+        clicked_tab.show_body()     # Then, show only the tab that was clicked
 
 
 class Tab(Widget):
