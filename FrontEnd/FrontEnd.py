@@ -17,8 +17,13 @@ basic_font = ("Arial", 14)
 
 
 class Window:
-    
+    """
+    This class handles all the frames, tabs, and popups related to the program, as well as interfacing with the backend
+    """
     def __init__(self):
+        """
+        Initial setup of all the necessary frames for the GUI
+        """
         self.root = tk.Tk()
         self.width = 1000
         self.height = 600
@@ -39,27 +44,27 @@ class Window:
         self.login_frame = tk.Frame(self.login_screen.left_frame, bg=bg_color)
         self.login_frame.pack()
         self.login_frame.place(relx=0.5, rely=0.5, anchor='c')
-        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font)
+        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font)     # Create the username label and button
         self.username_label.pack()
         self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font)
         self.username_field.pack()
-        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font)
+        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font)     # Create the password label and button
         self.password_label.pack()
         self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*")
         self.password_field.pack()
         self.login_pic = ImageTk.PhotoImage(Image.open(logo_path).resize((350, 350)))
         self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0)
-        self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))
+        self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         # Create the login button from image resource
         self.login_button = tk.Button(self.login_frame, image=self.login_button_pic, bg=bg_color, activebackground=bg_color, bd=0, command=self.login)
         self.login_button.pack(pady=10, expand=True, fill="both")
         self.login_pic_container.pack()
         self.login_pic_container.place(relx=0.5, rely=0.5, anchor='c')
         self.login_screen.show()
         
-        #Create the workflow screen
+        # Create the workflow screen
         self.work_screen = TabFrame(self.main_frame, 2)
         
-        ##Create elements in tab 1, this will be the open tab upon logging in
+        ## Create elements in tab 1, this will be the open tab upon logging in
         self.work_screen.tabs[0].tab_button.configure(text = "Records")
         self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
@@ -75,12 +80,12 @@ class Window:
         self.user_guide_button.pack(padx=100, pady=(10, 50), expand=True, fill="both")
         self.work_screen.tabs[0].show_body()
         
-        ##Create elements in tab 2
+        ## Create elements in tab 2
         self.work_screen.tabs[1].tab_button.configure(text = "Employees")
         self.work_screen.tabs[1].body_frame = TwoColumnFrame(self.work_screen.body_frame)
         self.work_screen.tabs[1].hide_body()
         
-        ###Tab 2 Left
+        ### Tab 2 Left
         self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2)
         self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,10))
         self.listbox_frame.pack_propagate(0)
@@ -115,7 +120,7 @@ class Window:
         self.visible_list = request_employees()
         self.update_search_listbox()
 
-        ###Tab 2 Right
+        ### Tab 2 Right
         self.emp_pic = ImageTk.PhotoImage(Image.open(logo_path).resize((100, 100)))
         self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,
                                           image=self.emp_pic, borderwidth=2, relief="groove")
@@ -130,12 +135,21 @@ class Window:
         self.work_screen.hide()
         
     def run(self):
+        """
+        Begins the program by running the main loop
+        """
         self.root.mainloop()
         
     def exit(self):
+        """
+        Ends the program
+        """
         self.destroy()
     
     def login(self):
+        """
+        Verifies the user's login credentials. If the credentials are incorrect, show a warning notice. Otherwise, login the user.
+        """
         if verify_login(self.username_field.get(), self.password_field.get()):
             self.login_screen.hide()
             self.work_screen.show()
@@ -143,6 +157,9 @@ class Window:
             popup = Notice(self, "Incorrect username or password.")
     
     def search_keyrelease(self, event):
+        """
+        Updates the displayed employee list in the employee tab based on the current information entered in the search box.
+        """
         search_string = event.widget.get()
         self.visible_list = []
         for i in self.full_list:
@@ -151,6 +168,9 @@ class Window:
         self.update_search_listbox()
     
     def listbox_select(self, event):
+        """
+        Unknown
+        """
         selection = event.widget.curselection()
         if selection:
             index = selection[0]
@@ -160,6 +180,9 @@ class Window:
             self.emp_name_label.configure(text="")
 
     def update_search_listbox(self):
+        """
+        Unknown
+        """
         self.emp_box.delete(0,'end')
         for i in self.visible_list:
             self.emp_box.insert(0, i)
@@ -167,30 +190,49 @@ class Window:
 
 
 class Widget(ABC):
-    
+    """
+    Uknown
+    """
     @abstractmethod
     def show(self):
+        """
+        Unknown
+        """
         pass
     
     @abstractmethod
     def hide(self):
+        """
+        Unknown
+        """
         pass
 
 
 class TwoColumnFrame(Widget):
-    
+    """
+    This class holds the frames for the records and employees tabs
+    """
     def __init__(self, frame):
+        """
+        Initialize the left and right frames of the two column frame
+        """
         self.left_frame = tk.Frame(frame, bg=bg_color)
         self.right_frame = tk.Frame(frame, bg=bg_color)
         self.show()
         
     def show(self):
+        """
+        Show the two column frame in the window
+        """
         self.left_frame.pack(side="left", fill="both", expand=True)
         self.left_frame.pack_propagate(0)
         self.right_frame.pack(side="right", fill="both", expand=True)
         self.right_frame.pack_propagate(0)
         
     def hide(self):
+        """
+        Hide the two column frame in the window
+        """
         self.left_frame.pack_forget()
         self.right_frame.pack_forget()
 
@@ -198,6 +240,9 @@ class TwoColumnFrame(Widget):
 class TabFrame(Widget):
     
     def __init__(self, frame, tab_count):
+        """
+        Initialize the tab frame
+        """
         self.tabs_frame = tk.Frame(frame, bg=bg_color, height=50)
         self.body_frame = tk.Frame(frame, bg=bg_color)
         self.tabs = []
@@ -206,20 +251,32 @@ class TabFrame(Widget):
         self.show()
     
     def show(self):
+        """
+        Shows the tab frame
+        """
         self.tabs_frame.pack(side='top', fill='both')
         self.tabs_frame.pack_propagate(0)
         self.body_frame.pack(side='left', fill='both', expand=True)
         self.body_frame.pack_propagate(0)
         
     def hide(self):
+        """
+        Hides the tab frame
+        """
         self.tabs_frame.pack_forget()
         self.body_frame.pack_forget()
             
     def add_tab(self):
+        """
+        Add an additional tab to the list of available tabs
+        """
         tab = Tab(self)
         self.tabs.append(tab)
         
     def focus_tab(self, clicked_tab):
+        """
+        Method for showing only the currently selected tab
+        """
         for tab in self.tabs:
             tab.hide_body()
         clicked_tab.show_body()
