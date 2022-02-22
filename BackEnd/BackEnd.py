@@ -61,7 +61,7 @@ class BackendImplementation:
         self.USERFilename = "userlogin.csv"
 
 
-        ActiveUser = None
+        self.ActiveUser = None
 
         try:
             self.EMPfile = open(self.EMPFilename, 'r' )
@@ -234,6 +234,18 @@ class BackendImplementation:
         
         del self.EMP_DICT[empID]
         return True
+    
+    def VerifyPermission(self, action):
+        """
+            Verify that the action is in the users permissions.
+        """
+        if self.ActiveUser == None:
+            return False
+        
+        if action in self.ActiveUser.Permissions:
+            return True
+        
+        return False
     
     def SaveEmployees(self):
         """
