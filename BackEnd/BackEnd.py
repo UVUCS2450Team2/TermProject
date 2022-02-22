@@ -164,9 +164,28 @@ class BackendImplementation:
 
             
         return
+    
+    def IsUserValid(self, username):
+        if username in self.USER_DICT:
+            return True
+        return False
+        
+    
+    def VerifyLogin(self, username, password):
+        if not self.IsUserValid(username):
+            return False
+            
+        user = self.USER_DICT[username]
+        
+        if not password == user.password:
+            return False
+        
+        return True
+        
 
     def SetActiveUser(self, user):
         self.SetActiveUser = user
+
 
     def AddEmployee(self, emp):
         self.EMP_DICT[emp.emp_id] = emp
@@ -222,8 +241,6 @@ class BackendImplementation:
                 self.USERfile.write("," + action)
             
             self.USERfile.write("\n")
-
-
 
     
     def DumpEmployees(self):
