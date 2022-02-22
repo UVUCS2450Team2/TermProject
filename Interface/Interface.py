@@ -37,7 +37,13 @@ class ApplicationInterface:
             This function creates an exported CSV file of the employees payroll. Returns boolean for success
         """
         pass
-
+    
+    def add_employee(self, emp):
+        """
+            This function takes as parameters an employee object and adds its to the database in the backend
+        """
+        pass
+    
     def update_employee(self, empID, emp):
         """
             This function takes as parameters the employees ID that needs to be updated, and an employee class that will replace it.

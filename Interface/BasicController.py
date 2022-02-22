@@ -34,7 +34,9 @@ class BasicControlller(ApplicationInterface):
         """
             This function returns a list of employees, used by the front end in a formatted way.
         """
-        pass
+
+        return self.Backend.getEmployeesAsList()
+        
 
     def export_payroll(self):
         """
@@ -42,21 +44,32 @@ class BasicControlller(ApplicationInterface):
         """
         pass
 
+    def add_employee(self, emp):
+        """
+            This function takes as parameters an employee object and adds its to the database in the backend
+        """
+        self.Backend.AddEmployee(emp)
+
     def update_employee(self, empID, emp):
         """
             This function takes as parameters the employees ID that needs to be updated, and an employee class that will replace it.
             Returns boolean value if operation was successful
         """
-        pass
+        return self.Backend.UpdateEmployee(empID, emp)
+        
 
     def remove_employee(self, empID):
         """
             This function takes as a parameter the employee ID that needs to be removed from records. 
             Returns a boolean value if operation was successful
         """
+        return self.Backend.RemoveEmployee(empID)
     
     def verify_permission(self, action):
         """
             This function calls a black box in the backend to verify whether the user is allowed to do the action that is being requested.
             These actions have a string name and must be used uniformly.
         """
+        return self.Backend.VerifyPermission(action)
+
+
