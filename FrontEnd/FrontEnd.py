@@ -46,7 +46,7 @@ class Window:
         # This section creates the white frame that goes on top of the light gray background
         self.main_frame = tk.Frame(self.root, bg=bg_color)  ## Create the main frame on the root
         self.main_frame.pack(fill='both', expand=True, padx=10, pady=10)    ## Expand to fill the window, leaving a border
-        self.main_frame.pack_propagate(0)   ## Enable showing the frame
+        self.main_frame.pack_propagate(0)   ## tell frame not to let its children control its size
         
         # Create the login screen
         self.login_screen = TwoColumnFrame(self.main_frame)     ## Create the login screen from a two column frame class
@@ -91,7 +91,7 @@ class Window:
         self.login_screen.show()    ## show the login screen frame
         
         # Create the workflow screen
-        self.work_screen = TabFrame(self.main_frame, 2)
+        self.work_screen = TabFrame(self.main_frame, 2) # Create x tabs in the tabs frame
         
         ## Create elements in tab 1, this will be the open tab upon logging in
         self.work_screen.tabs[0].tab_button.configure(text = "Records")
@@ -127,8 +127,8 @@ class Window:
         self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2) #### Create a listbox frame on the left frame of the employees tab
         self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,10))
         self.listbox_frame.pack_propagate(0)
-        self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font)    #### Create a search feild and attach it to the listbox
-        self.emp_search_field.bind("<KeyRelease>", self.search_keyrelease)
+        self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font)    #### Create a search field and attach it to the listbox
+        self.emp_search_field.bind("<KeyRelease>", self.search_keyrelease) # Create event listenter for the search field
         self.emp_search_field.pack(side='top', fill='both', padx=10, pady=(10,0))
         self.search_pic = ImageTk.PhotoImage(Image.open(search_icon_path).resize((25, 25)))
         self.search_pic_container = tk.Label(self.emp_search_field, image=self.search_pic, bd=0)    #### Add a search icon to the search field
@@ -139,7 +139,7 @@ class Window:
         self.emp_box_scroller = tk.Scrollbar(self.emp_box, command=self.emp_box.yview)      #### Create a scroll bar and attach it to the employee listbox
         self.emp_box.config(yscrollcommand = self.emp_box_scroller.set)     #### Configure the scroll bar settings
         self.emp_box_scroller.pack(side='right', fill='both')
-        self.emp_box.bind("<<ListboxSelect>>", self.listbox_select)
+        self.emp_box.bind("<<ListboxSelect>>", self.listbox_select) # Create event listener for when an item in the listbox is selected
         self.emp_box.pack(fill="both", expand=True)
         self.emp_box.pack_propagate(0)
         self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)    #### Create a new frame for add, edit, and delete buttons
@@ -173,7 +173,7 @@ class Window:
         self.emp_name = ""
         self.emp_name_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_name_label_container.pack(pady=5, fill="x")
-        self.emp_name_label = tk.Label(self.emp_name_label_container, font=basic_font,    #### Add a feild for the employee's name
+        self.emp_name_label = tk.Label(self.emp_name_label_container, font=basic_font,    #### Add a field for the employee's name
                                        bg=bg_color2, text="Employee:")
         self.emp_name_label.pack(side="left")
         self.emp_name_entry = tk.Entry(self.emp_name_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_name, width=self.entry_length)
@@ -181,19 +181,19 @@ class Window:
 
         self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_salary_label_container.pack(pady=5, fill="x")
-        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a feild for the employee's payment type
+        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a field for the employee's payment type
                                          bg=bg_color2, text="Payment type:")
         self.emp_salary_label.pack(side="left")
 
         self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_payment_label_container.pack(pady=5, fill="x")
-        self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a feild for the employee's pay amount
+        self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a field for the employee's pay amount
                                          bg=bg_color2, text="Amount: $0")
         self.emp_payment_label.pack(side="left")
 
         self.emp_address_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_address_label_container.pack(pady=5, fill="x")
-        self.emp_address_label = tk.Label(self.emp_address_label_container, font=basic_font,  #### Add a feild for the employee's address
+        self.emp_address_label = tk.Label(self.emp_address_label_container, font=basic_font,  #### Add a field for the employee's address
                                          bg=bg_color2, text="Address:")
         self.emp_address_label.pack(side="left")
         
@@ -209,7 +209,7 @@ class Window:
         """
         Ends the program
         """
-        self.destroy()      # When the user closes the program destroy the root window
+        self.root.destroy()      # When the user closes the program destroy the root window
     
     def login(self):
         """
@@ -247,36 +247,36 @@ class Window:
 
     def update_search_listbox(self):
         """
-        Unknown
+        Updates the listbox to show only employess who are in the visible list
         """
-        self.emp_box.delete(0,'end')
-        for i in self.visible_list:
-            self.emp_box.insert(0, i)
-            self.emp_box.itemconfig(0, {'bg':'white'})
+        self.emp_box.delete(0,'end') # Remove all items in the employee listbox
+        for i in self.visible_list:  # With the update list of employees that should be available in the listbox,
+            self.emp_box.insert(0, i) # Insert employee name into listbox
+            self.emp_box.itemconfig(0, {'bg':'white'}) # Edit background color
 
 
 class Widget(ABC):
     """
-    Uknown
+    This Abstract Class acts as a custom object that can be placed into a tkinter window
     """
     @abstractmethod
     def show(self):
         """
-        Unknown
+        Enforces a show method on child classes, which will show this window object
         """
         pass
     
     @abstractmethod
     def hide(self):
         """
-        Unknown
+        Enforces a hide method on child classes, which will hide this window object
         """
         pass
 
 
 class TwoColumnFrame(Widget):
     """
-    This class holds the frames for the records and employees tabs
+    This class holds two frames, one on the left, one on the right
     """
     def __init__(self, frame):
         """
@@ -291,9 +291,9 @@ class TwoColumnFrame(Widget):
         Show the two column frame in the window
         """
         self.left_frame.pack(side="left", fill="both", expand=True)     # Left frame fills the left side of the window
-        self.left_frame.pack_propagate(0)                               # Enable the left frame
+        self.left_frame.pack_propagate(0)
         self.right_frame.pack(side="right", fill="both", expand=True)   # Right frame fills the right side of the window
-        self.right_frame.pack_propagate(0)                              # Enable the right frame
+        self.right_frame.pack_propagate(0)
         
     def hide(self):
         """
@@ -304,7 +304,9 @@ class TwoColumnFrame(Widget):
 
 
 class TabFrame(Widget):
-    
+    """
+    This class holds the frames for the records and employees tabs
+    """
     def __init__(self, frame, tab_count):
         """
         Initialize the tab frame
@@ -357,9 +359,8 @@ class Tab(Widget):
         """
         Initialize the tab
         """
-        self.parent = frame
-        self.body_frame = None
-        self.tab_frame = tk.Frame(frame.tabs_frame, bg=bg_color)
+        self.body_frame = None # This will later be filled with a reference to a frame object
+        self.tab_frame = tk.Frame(frame.tabs_frame, bg=bg_color) # A frame to hold the tab button
 
         self.corner_left_image = ImageTk.PhotoImage(Image.open(corner_image_path).resize((35, 35)))
         self.corner_left_container = tk.Label(self.tab_frame, image=self.corner_left_image, bg=bg_color, bd=0)
@@ -370,26 +371,26 @@ class Tab(Widget):
         self.corner_right_container.pack(side="right", anchor="ne")
 
         self.tab_button = tk.Button(self.tab_frame, text="Tab", bg=bg_color2, font=title_font, bd=0, activebackground=bg_color2,
-                                    command=lambda: self.parent.focus_tab(self))
+                                    command=lambda: frame.focus_tab(self))
         self.tab_button.pack(fill="both", expand=True)
         self.show()
         
     def show(self):
         """
-        Show the tab
+        Show the tab in the parent tabs frame
         """
         self.tab_frame.pack(side="left", fill="both", expand=True)
         self.tab_frame.pack_propagate(0)
     
     def hide(self):
         """
-        Hide the tab
+        Hide the tab in the parent tabs frame
         """
         self.tab_frame.pack_forget()
         
     def show_body(self):
         """
-        A better way to show the tab that puts everything back where it was
+        Show the body frame that is attached to this tab
         """
         self.tab_button.pack_forget()
         self.corner_left_container.pack(side="left", anchor="nw")
@@ -404,7 +405,7 @@ class Tab(Widget):
             
     def hide_body(self):
         """
-        A better way to hide the tab
+        Hide the body frame that is attached to this tab
         """
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack_forget()
@@ -424,24 +425,23 @@ class Popup:
         """
         Initialize and display the popup
         """
-        self.master = master
-        self.popup = tk.Toplevel(master.root)
-        self.popup.width = 350
+        self.popup = tk.Toplevel(master.root) # Create the popup as a child of the root tk application
+        self.popup.width = 350 # Set popup dimensions and show in the center of the screen
         self.popup.height = 100
         self.popup.geometry("{}x{}+{}+{}".format(self.popup.width, self.popup.height,
-                                                int(self.master.root.winfo_screenwidth()/2 - self.popup.width/2),
-                                                int(self.master.root.winfo_screenheight()/2 - self.popup.height/2)))
-        self.popup.resizable(width=False, height=False)
-        self.popup.configure(bg=bg_color2)
+                                                int(master.root.winfo_screenwidth()/2 - self.popup.width/2),
+                                                int(master.root.winfo_screenheight()/2 - self.popup.height/2)))
+        self.popup.resizable(width=False, height=False) # Disable resizing
+        self.popup.configure(bg=bg_color2) # Set visiual appearance of the popup
         self.popup.title("EmpDat")
         self.popup.icon_image = tk.PhotoImage(file = logo_small_path)
         self.popup.iconphoto(False, self.popup.icon_image)
         
-        self.popup.main_frame = tk.Frame(self.popup, bg=bg_color)
+        self.popup.main_frame = tk.Frame(self.popup, bg=bg_color) # A frame where the window context is shown
         self.popup.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         self.popup.main_frame.pack_propagate(0)
         
-        self.popup.message_label = tk.Label(self.popup.main_frame, text=message, bg=bg_color, font=basic_font)
+        self.popup.message_label = tk.Label(self.popup.main_frame, text=message, bg=bg_color, font=basic_font) # Display a message
         self.popup.message_label.pack(side="top", pady=(5, 0))
         self.popup.message_label.pack_propagate(0)
         
@@ -460,9 +460,9 @@ class Notice(Popup):
         """
         Initialize and show the notice popup
         """
-        super().__init__(master, message)
+        super().__init__(master, message)  # Run super init
         self.popup.okay_button = tk.Button(self.popup.main_frame, text="Okay", bg=skyblue, bd=0,
-                                      foreground=bg_color, font=basic_font, command=self.close)
+                                      foreground=bg_color, font=basic_font, command=self.close) # A button to close the notice
         self.popup.okay_button.pack(side="bottom", pady=5)
 
 
@@ -474,12 +474,12 @@ class Confirmation(Popup):
         """
         Initialize and show the confirmation popup
         """
-        super().__init__(master, message)
-        self.popup.yes_button = tk.Button(self.popup.main_frame, text="Yes",
-                                          bg=skyblue, bd=0, foreground=bg_color, font=basic_font)
+        super().__init__(master, message) # Run super init
+        self.popup.yes_button = tk.Button(self.popup.main_frame, text="Yes", bg=skyblue, bd=0,
+                                            foreground=bg_color, font=basic_font, command=self.yes) # A button to confirm the action
         self.popup.yes_button.pack(side="left", padx=(90, 5), pady=5)
-        self.popup.no_button = tk.Button(self.popup.main_frame, text="No",
-                                         bg=skyblue, bd=0, foreground=bg_color, font=basic_font)
+        self.popup.no_button = tk.Button(self.popup.main_frame, text="No", bg=skyblue, bd=0,
+                                            foreground=bg_color, font=basic_font, command=self.no) # A button to decline the action
         self.popup.no_button.pack(side="right", padx=(5, 90), pady=5)
 
     def yes(self):
