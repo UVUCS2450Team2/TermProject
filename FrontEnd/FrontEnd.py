@@ -11,6 +11,8 @@ login_button_path = folder_path+"login_button.PNG"
 payroll_button_path = folder_path+"payroll_button.PNG"
 user_guide_button_path = folder_path+"user_guide_button.PNG"
 corner_image_path = folder_path+"corner.PNG"
+add_button_path = folder_path+"add_button.PNG"
+delete_button_path = folder_path+"delete_button.PNG"
 bg_color  = "white"
 bg_color2 = "#D7D8D9"
 skyblue = "#3bc3f1"
@@ -143,15 +145,17 @@ class Window:
         self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)    #### Create a new frame for add, edit, and delete buttons
         self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
         self.manage_emp_frame.pack_propagate(0)
-        self.emp_add_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text="  Add ",
+        self.add_button_image = ImageTk.PhotoImage(Image.open(add_button_path).resize((225, 50)))
+        self.emp_add_btn = tk.Button(self.manage_emp_frame, bg=bg_color, foreground=bg_color, image=self.add_button_image,
                                         font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Add button on employee management frame
-        self.emp_add_btn.pack(side='left', expand=True, fill='both')
-        self.emp_edit_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text=" Edit ",
-                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Edit button on employee management frame
-        self.emp_edit_btn.pack(side='left', expand=True, fill='both', padx=10)
-        self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text="Delete",
+        self.emp_add_btn.pack(side='left', padx=0)
+        #self.emp_edit_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text=" Edit ",
+        #                                font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Edit button on employee management frame
+        #self.emp_edit_btn.pack(side='left', expand=True, fill='both', padx=10)
+        self.delete_button_image = ImageTk.PhotoImage(Image.open(delete_button_path).resize((225, 50)))
+        self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=bg_color, foreground=bg_color, image=self.delete_button_image,
                                             font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Delete button on employee management frame
-        self.emp_delete_btn.pack(side='left', expand=True, fill='both')
+        self.emp_delete_btn.pack(side='right')
         self.full_list = request_employees()        #### Populate the listbox with the full list of employee initially
         self.visible_list = request_employees()     #### Show the current requested employees
         self.update_search_listbox()        #### Update the search box based on the entered information
