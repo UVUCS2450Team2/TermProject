@@ -61,7 +61,7 @@ class BackendImplementation:
         self.USERFilename = "userlogin.csv"
 
 
-        ActiveUser = None
+        self.ActiveUser = None
 
         try:
             self.EMPfile = open(self.EMPFilename, 'r' )
@@ -165,14 +165,50 @@ class BackendImplementation:
             
         return
 
+    
+    def IsUserValid(self, username):
+        """
+            A function to quickly find if a user exists in memory
+        """
+        if username in self.USER_DICT:
+            return True
+        return False
+        
+    
+    def VerifyLogin(self, username, password):
+        """
+            Function that returns true if the username and password credentials match up with 
+            what is in the user data structure array
+        """
+        if not self.IsUserValid(username):
+            return False
+            
+        user = self.USER_DICT[username]
+        
+        if not password == user.password:
+            return False
+        
+        return True
+        
+
     def SetActiveUser(self, user):
-        self.SetActiveUser = user
+        """
+            Set the user as the active user. This if for permissions to function.
+        """
+        self.SetActiveUser = self.USER_DICT[user]
+
 
     def AddEmployee(self, emp):
+        """
+            Add a new employee to the data structure array
+        """
         self.EMP_DICT[emp.emp_id] = emp
 
     
     def UpdateEmployee(self, empID, emp):
+        """
+            Replace employee data in the data structure array based on ID. Requires that a new emp data be sent to function
+        """
         emp = self.EMP_DICT.get(empID)
 
         if emp == None:
@@ -181,7 +217,16 @@ class BackendImplementation:
         self.EMP_DICT[empID] = emp
         return True
     
+    def getEmployeesAsList(self):
+        return self.EMP_DICT.values()
+    
+    def getUsersAsList(self):
+        return self.USER_DICT.values()
+
     def RemoveEmployee(self, empID):
+        """
+            Remove the employee from the data structure array based on ID
+        """
         emp = self.EMP_DICT.get(empID)
 
         if emp == None:
@@ -189,6 +234,18 @@ class BackendImplementation:
         
         del self.EMP_DICT[empID]
         return True
+    
+    def VerifyPermission(self, action):
+        """
+            Verify that the action is in the users permissions.
+        """
+        if self.ActiveUser == None:
+            return False
+        
+        if action in self.ActiveUser.Permissions:
+            return True
+        
+        return False
     
     def SaveEmployees(self):
         """
@@ -222,8 +279,6 @@ class BackendImplementation:
                 self.USERfile.write("," + action)
             
             self.USERfile.write("\n")
-
-
 
     
     def DumpEmployees(self):

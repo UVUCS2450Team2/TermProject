@@ -4,6 +4,16 @@
 
     The most important aspect is the permissions, which is a series of strings that act as flags
     which clearly state what the user is allowed to d.
+
+    The Actions so far are :
+
+    ADD 
+
+    EDIT
+
+    DELETE
+
+    The GUI needs to verify that any actions requested by the user is allowed. 
 """
 
 
