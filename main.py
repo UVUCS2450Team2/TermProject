@@ -1,8 +1,4 @@
-import FrontEnd
+from FrontEnd.FrontEnd import *
 
-def main(self):
-    """
-    Insert description here
-    """
-    window = FrontEnd.Window
-    window.run()
+window = Window()
+window.run()
