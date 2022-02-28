@@ -2,9 +2,10 @@ from ctypes import WinDLL
 import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
-from BackEnd.empClass import Employee
+from BackEnd.empClass import Employee, Hourly, Salaried, Commissioned
 import Interface.BasicController
 import copy
+
 
 folder_path = "FrontEnd\\Assets\\"
 logo_large_path = folder_path+"logo_large.PNG"
@@ -260,7 +261,27 @@ class Window:
         self.current_working_employee = next(employee for employee in self.Controller.request_employees() if ((employee.f_name == name[0]) and (employee.l_name == name[1])))
         if selection:
             self.emp_name_entry.delete(0, last="end")
-            self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab   
+            self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab
+
+            self.emp_payment_entry.delete(0, tk.END)
+            self.emp_classification = self.current_working_employee.classification
+            if isinstance(self.emp_classification, Hourly): self.emp_classification = "Hourly"
+            elif isinstance(self.emp_classification, Salaried): self.emp_classification = "Salaried"
+            elif isinstance(self.emp_classification, Commissioned): self.emp_classification = "Commissioned"
+            else: self.emp_classification = "Unknown"
+            self.emp_payment_entry.insert(0, self.emp_classification)
+
+            self.emp_salary_entry.delete(0, tk.END)
+            self.emp_pay_amount = ""
+            if (self.emp_classification == "Hourly"): self.emp_pay_amount = self.current_working_employee.hourly
+            elif (self.emp_classification == "Salaried"): self.emp_pay_amount = self.current_working_employee.salaried
+            elif (self.emp_classification == "Commissioned"): self.emp_pay_amount = self.current_working_employee.commissioned
+            else: self.emp_pay_amount = "Unknown"
+            self.emp_salary_entry.insert(0, self.emp_pay_amount)
+
+            self.emp_address_entry.delete(0, tk.END)
+            self.emp_address_string = self.current_working_employee.address
+            self.emp_address_entry.insert(0, self.emp_address_string)
         else:
             self.emp_name_label.configure(text="")
 
@@ -285,10 +306,21 @@ class Window:
 
     def update_working_employee(self, event):
         new_name = self.emp_name.get().split()
+        new_payment_type = self.emp_payment.get().lower()
+        new_payment_amount = self.emp_salary.get()
+        new_address = self.emp_address.get()
+
         empID = self.current_working_employee.emp_id
         new_employee = copy.copy(self.current_working_employee)
         new_employee.f_name = new_name[0]
         new_employee.l_name = new_name[1]
+        new_employee.address = new_address
+        if new_payment_type == "hourly": new_payment_type = Hourly(new_payment_amount); new_employee.hourly = new_payment_amount
+        elif new_payment_type == "salaried": new_payment_type = Salaried(new_payment_amount); new_employee.salary = new_payment_amount
+        elif new_payment_type == "commisioned": new_payment_type = Commissioned(new_payment_amount, 100); new_employee.commission = new_payment_amount
+        else: new_payment_type = None
+        new_employee.classification = new_payment_type
+        
         self.Controller.update_employee(empID, new_employee)
         self.full_list = self.request_employees()
         self.visible_list = self.request_employees()
