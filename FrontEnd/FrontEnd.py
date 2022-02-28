@@ -2,6 +2,9 @@ from ctypes import WinDLL
 import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
+from BackEnd.empClass import Employee
+import Interface.BasicController
+import copy
 
 folder_path = "FrontEnd\\Assets\\"
 logo_large_path = folder_path+"logo_large.PNG"
@@ -29,6 +32,7 @@ class Window:
         """
         Initial setup of all the necessary frames for the GUI
         """
+        self.Controller = Interface.BasicController.BasicControlller()
         # This section creates the basic window with a light gray background
         self.root = tk.Tk() ## Create the root window
         self.width = 1000   ## Define the root window's dimensions
@@ -156,8 +160,8 @@ class Window:
         self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=bg_color, foreground=bg_color, image=self.delete_button_image,
                                             font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Delete button on employee management frame
         self.emp_delete_btn.pack(side='right')
-        self.full_list = request_employees()        #### Populate the listbox with the full list of employee initially
-        self.visible_list = request_employees()     #### Show the current requested employees
+        self.full_list = self.request_employees()        #### Populate the listbox with the full list of employee initially
+        self.visible_list = self.request_employees()     #### Show the current requested employees
         self.update_search_listbox()        #### Update the search box based on the entered information
 
         ### Tab 2 Right
@@ -170,7 +174,7 @@ class Window:
 
         self.work_screen.tabs[1].body_frame.right_frame.configure(bd=self.indent_amount)
 
-        self.emp_name = ""
+        self.emp_name = tk.StringVar()
         self.emp_name_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_name_label_container.pack(pady=5, fill="x")
         self.emp_name_label = tk.Label(self.emp_name_label_container, font=basic_font,    #### Add a field for the employee's name
@@ -178,24 +182,37 @@ class Window:
         self.emp_name_label.pack(side="left")
         self.emp_name_entry = tk.Entry(self.emp_name_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_name, width=self.entry_length)
         self.emp_name_entry.pack(side="left", fill="x")
+        self.emp_name_entry.bind("<Return>", self.update_working_employee)
 
-        self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
-        self.emp_salary_label_container.pack(pady=5, fill="x")
-        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a field for the employee's payment type
-                                         bg=bg_color2, text="Payment type:")
-        self.emp_salary_label.pack(side="left")
-
+        self.emp_payment = tk.StringVar()
         self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_payment_label_container.pack(pady=5, fill="x")
         self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a field for the employee's pay amount
-                                         bg=bg_color2, text="Amount: $0")
+                                         bg=bg_color2, text="Payment type:")
         self.emp_payment_label.pack(side="left")
+        self.emp_payment_entry = tk.Entry(self.emp_payment_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_payment, width=self.entry_length)
+        self.emp_payment_entry.pack(side="left", fill="x")
+        self.emp_payment_entry.bind("<Return>", self.update_working_employee)
 
+        self.emp_salary = tk.StringVar()
+        self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
+        self.emp_salary_label_container.pack(pady=5, fill="x")
+        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a field for the employee's payment type
+                                         bg=bg_color2, text="Amount:")
+        self.emp_salary_label.pack(side="left")
+        self.emp_salary_entry = tk.Entry(self.emp_salary_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_salary, width=self.entry_length)
+        self.emp_salary_entry.pack(side="left", fill="x")
+        self.emp_salary_entry.bind("<Return>", self.update_working_employee)
+
+        self.emp_address = tk.StringVar()
         self.emp_address_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_address_label_container.pack(pady=5, fill="x")
         self.emp_address_label = tk.Label(self.emp_address_label_container, font=basic_font,  #### Add a field for the employee's address
                                          bg=bg_color2, text="Address:")
         self.emp_address_label.pack(side="left")
+        self.emp_address_entry = tk.Entry(self.emp_address_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_address, width=self.entry_length)
+        self.emp_address_entry.pack(side="left", fill="x")
+        self.emp_address_entry.bind("<Return>", self.update_working_employee)
         
         self.work_screen.hide()     #### Hide the tab since it is not the first tab
         
@@ -237,13 +254,16 @@ class Window:
         Updates the employee information on the right tab when an employee is selected in the left tab
         """
         selection = event.widget.curselection()     # When the user clicks on an employee
+        index = selection[0]
+        data = event.widget.get(index)
+        name = data.split()
+        self.current_working_employee = next(employee for employee in self.Controller.request_employees() if ((employee.f_name == name[0]) and (employee.l_name == name[1])))
         if selection:
-            index = selection[0]
-            data = event.widget.get(index)
             self.emp_name_entry.delete(0, last="end")
             self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab   
         else:
             self.emp_name_label.configure(text="")
+
 
     def update_search_listbox(self):
         """
@@ -253,6 +273,27 @@ class Window:
         for i in self.visible_list:  # With the update list of employees that should be available in the listbox,
             self.emp_box.insert(0, i) # Insert employee name into listbox
             self.emp_box.itemconfig(0, {'bg':'white'}) # Edit background color
+
+    def request_employees(self) : 
+        #return sorted(["Alex", "Elliot", "Shayne", "Michael", "Kaleb", "Sam"] *5, reverse=True)
+        emplist = self.Controller.request_employees()
+        names = []
+        for employee in emplist:
+            names.append(employee.f_name+" "+employee.l_name)
+
+        return names
+
+    def update_working_employee(self, event):
+        new_name = self.emp_name.get().split()
+        empID = self.current_working_employee.emp_id
+        new_employee = copy.copy(self.current_working_employee)
+        new_employee.f_name = new_name[0]
+        new_employee.l_name = new_name[1]
+        self.Controller.update_employee(empID, new_employee)
+        self.full_list = self.request_employees()
+        self.visible_list = self.request_employees()
+        self.emp_search_field.delete(0, tk.END)
+        self.update_search_listbox()
 
 
 class Widget(ABC):
@@ -499,8 +540,7 @@ class Confirmation(Popup):
 def verify_login(username, password):
     return True
 
-def request_employees() : 
-    return sorted(["Alex", "Elliot", "Shayne", "Michael", "Kaleb", "Sam"] *5, reverse=True)
+
 
 def get_employee(ID) :
     return 100

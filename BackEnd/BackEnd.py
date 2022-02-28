@@ -42,9 +42,9 @@ from collections import *
 
 from BackEnd import *
 
-from empClass import *
+from BackEnd.empClass import *
 
-from User import *
+from BackEnd.User import *
 
 
 
@@ -54,7 +54,7 @@ class BackendImplementation:
         self.EMP_DATA = []
         self.EMP_DICT = OrderedDict({})
         self.EMPfile = 0
-        self.EMPFilename = "employees.csv"
+        self.EMPFilename = "BackEnd/employees.csv"
 
         self.USER_DICT = OrderedDict({})
         self.USERfile = 0
@@ -209,8 +209,6 @@ class BackendImplementation:
         """
             Replace employee data in the data structure array based on ID. Requires that a new emp data be sent to function
         """
-        emp = self.EMP_DICT.get(empID)
-
         if emp == None:
             return False
         
