@@ -223,23 +223,29 @@ class Window:
         self.work_screen.hide()     #### Hide the tab since it is not the first tab
     
     def add(self):
-        blank = empClass.Employee()
+        """
+        Add a new employee to the database
+        """
+        blank = empClass.Employee() # Create a new employee
         id_list = []
         new_id = None
         for employee in self.Controller.request_employees():
             id_list.append(employee.emp_id)
         while (new_id := random.randrange(100000, 999999)) in id_list: pass
-        blank.emp_id = new_id
-        self.Controller.add_employee(blank)
-        self.full_list = self.request_employees()
+        blank.emp_id = new_id   # Assign the blank employee an ID that is not already taken
+        self.Controller.add_employee(blank) # Add the employee
+        self.full_list = self.request_employees()   # Update the visible list of employees
         self.visible_list = self.request_employees()
         self.emp_search_field.delete(0, tk.END)
         self.update_search_listbox()
 
     def delete(self):
-        self.Controller.remove_employee(self.current_working_employee.emp_id)
+        """
+        Delete the currently selected employee from the database
+        """
+        self.Controller.remove_employee(self.current_working_employee.emp_id) # Remove the currently selected employee from the database
         self.full_list = self.request_employees()
-        self.visible_list = self.request_employees()
+        self.visible_list = self.request_employees()    # Update the visible list of employees
         self.emp_search_field.delete(0, tk.END)
         self.update_search_listbox()
 
@@ -321,35 +327,41 @@ class Window:
             self.emp_box.insert(0, i) # Insert employee name into listbox
             self.emp_box.itemconfig(0, {'bg':'white'}) # Edit background color
 
-    def request_employees(self) : 
+    def request_employees(self) :
+        """
+        Gets a list of all the names of the employees in the database
+        """ 
         #return sorted(["Alex", "Elliot", "Shayne", "Michael", "Kaleb", "Sam"] *5, reverse=True)
-        emplist = self.Controller.request_employees()
+        emplist = self.Controller.request_employees()   # Request the employee list from the backend
         names = []
         for employee in emplist:
-            names.append(employee.f_name+" "+employee.l_name)
+            names.append(employee.f_name+" "+employee.l_name)   # Get all the names from the employee list
 
         return names
 
     def update_working_employee(self, event):
-        new_name = self.emp_name.get().split()
+        """
+        Updates the currently selected employee with new data once the enter key is pressed
+        """
+        new_name = self.emp_name.get().split()  # Get all the new data from tk entries
         new_payment_type = self.emp_payment.get().lower()
         new_payment_amount = self.emp_salary.get()
         new_address = self.emp_address.get()
 
         empID = self.current_working_employee.emp_id
-        new_employee = copy.copy(self.current_working_employee)
+        new_employee = copy.copy(self.current_working_employee) # Create a copy of the current working employee
         new_employee.f_name = new_name[0]
         new_employee.l_name = new_name[1]
         new_employee.address = new_address
-        if new_payment_type == "hourly": new_payment_type = Hourly(new_payment_amount); new_employee.hourly = new_payment_amount
+        if new_payment_type == "hourly": new_payment_type = Hourly(new_payment_amount); new_employee.hourly = new_payment_amount    # Format data and add to copy
         elif new_payment_type == "salaried": new_payment_type = Salaried(new_payment_amount); new_employee.salary = new_payment_amount
         elif new_payment_type == "commisioned": new_payment_type = Commissioned(new_payment_amount, 100); new_employee.commission = new_payment_amount
         else: new_payment_type = None
         new_employee.classification = new_payment_type
         
-        self.Controller.update_employee(empID, new_employee)
+        self.Controller.update_employee(empID, new_employee)    # Update the employee in the database
         self.full_list = self.request_employees()
-        self.visible_list = self.request_employees()
+        self.visible_list = self.request_employees()    # Update the list of employees on the frontend
         self.emp_search_field.delete(0, tk.END)
         self.update_search_listbox()
 
@@ -478,23 +490,23 @@ class Tab(Widget):
         """
         Show the tab in the parent tabs frame
         """
-        self.tab_frame.pack(side="left", fill="both", expand=True)
+        self.tab_frame.pack(side="left", fill="both", expand=True)  # Enable the tab
         self.tab_frame.pack_propagate(0)
     
     def hide(self):
         """
         Hide the tab in the parent tabs frame
         """
-        self.tab_frame.pack_forget()
+        self.tab_frame.pack_forget()    # Disable the tab
         
     def show_body(self):
         """
         Show the body frame that is attached to this tab
         """
-        self.tab_button.pack_forget()
-        self.corner_left_container.pack(side="left", anchor="nw")
+        self.tab_button.pack_forget()   # Disable the tab button
+        self.corner_left_container.pack(side="left", anchor="nw")   # Add in the rounded corners
         self.corner_right_container.pack(side="right", anchor="ne")
-        self.tab_button.pack(fill="both", expand=True)
+        self.tab_button.pack(fill="both", expand=True)  # Re-enable the tab button
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack(fill="both", expand=True)
         elif isinstance(self.body_frame, TwoColumnFrame):
@@ -510,8 +522,8 @@ class Tab(Widget):
             self.body_frame.pack_forget()
         elif isinstance(self.body_frame, TwoColumnFrame):
             self.body_frame.hide()
-        self.tab_button.configure(bg=bg_color2)
-        self.corner_left_container.pack_forget()
+        self.tab_button.configure(bg=bg_color2) # Hide the tab button
+        self.corner_left_container.pack_forget()    # Hide the rounded corners
         self.corner_right_container.pack_forget()
         self.tab_button.configure(bg=bg_color2, activebackground=bg_color2)
 
@@ -585,32 +597,10 @@ class Confirmation(Popup):
         """
         Commands to execute if the confirmation is positive
         """
-        self.close()
+        self.close()    # Close the popup
     
     def no(self):
         """
         Commands to execute if the confirmation is negative
         """
-        self.close()
-
-#####CONTROLLER#####
-# This section should be imported from the interface.py
-def verify_login(username, password):
-    return True
-
-
-
-def get_employee(ID) :
-    return 100
-
-def export_payroll() :
-    return
-
-def update_employee(ID, data) : 
-    return True
-
-def remove_employee(ID) :
-    return True
-
-def verify_permission(user, action) :
-    return True
+        self.close()    # Close the popup
