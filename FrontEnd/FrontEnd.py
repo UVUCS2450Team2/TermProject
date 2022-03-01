@@ -2,9 +2,11 @@ from ctypes import WinDLL
 import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
+from BackEnd import empClass
 from BackEnd.empClass import Employee, Hourly, Salaried, Commissioned
 import Interface.BasicController
 import copy
+import random
 
 
 folder_path = "FrontEnd\\Assets\\"
@@ -58,14 +60,17 @@ class Window:
         self.login_frame = tk.Frame(self.login_screen.left_frame, bg=bg_color)  ## Create the left frame on the login screen frame
         self.login_frame.pack()
         self.login_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center the login frame on the left column
+        self.username = tk.StringVar()
         self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font)     ## Create the username label and button
         self.username_label.pack()
-        self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font)
+        self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, textvariable=self.username)
         self.username_field.pack()
+        self.password = tk.StringVar()
         self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font)     ## Create the password label and button
         self.password_label.pack()
-        self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*")
+        self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*", textvariable=self.password)
         self.password_field.pack()
+        self.password_field.bind("<Return>", self.login)
         self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))     ## Load in the logo image
         self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=bg_color)     ## Create a logo container on the right frame of the two column frame
         self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         ## Create the login button from image resource
@@ -152,14 +157,14 @@ class Window:
         self.manage_emp_frame.pack_propagate(0)
         self.add_button_image = ImageTk.PhotoImage(Image.open(add_button_path).resize((225, 50)))
         self.emp_add_btn = tk.Button(self.manage_emp_frame, bg=bg_color, foreground=bg_color, image=self.add_button_image,
-                                        font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Add button on employee management frame
+                                        font=title_font, bd=0, command=self.add)  #### Create Add button on employee management frame
         self.emp_add_btn.pack(side='left', padx=0)
         #self.emp_edit_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text=" Edit ",
         #                                font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Edit button on employee management frame
         #self.emp_edit_btn.pack(side='left', expand=True, fill='both', padx=10)
         self.delete_button_image = ImageTk.PhotoImage(Image.open(delete_button_path).resize((225, 50)))
         self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=bg_color, foreground=bg_color, image=self.delete_button_image,
-                                            font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Delete button on employee management frame
+                                            font=title_font, bd=0, command=self.delete)  #### Create Delete button on employee management frame
         self.emp_delete_btn.pack(side='right')
         self.full_list = self.request_employees()        #### Populate the listbox with the full list of employee initially
         self.visible_list = self.request_employees()     #### Show the current requested employees
@@ -216,7 +221,28 @@ class Window:
         self.emp_address_entry.bind("<Return>", self.update_working_employee)
         
         self.work_screen.hide()     #### Hide the tab since it is not the first tab
-        
+    
+    def add(self):
+        blank = empClass.Employee()
+        id_list = []
+        new_id = None
+        for employee in self.Controller.request_employees():
+            id_list.append(employee.emp_id)
+        while (new_id := random.randrange(100000, 999999)) in id_list: pass
+        blank.emp_id = new_id
+        self.Controller.add_employee(blank)
+        self.full_list = self.request_employees()
+        self.visible_list = self.request_employees()
+        self.emp_search_field.delete(0, tk.END)
+        self.update_search_listbox()
+
+    def delete(self):
+        self.Controller.remove_employee(self.current_working_employee.emp_id)
+        self.full_list = self.request_employees()
+        self.visible_list = self.request_employees()
+        self.emp_search_field.delete(0, tk.END)
+        self.update_search_listbox()
+
     def run(self):
         """
         Begins the program by running the main loop
@@ -229,11 +255,11 @@ class Window:
         """
         self.root.destroy()      # When the user closes the program destroy the root window
     
-    def login(self):
+    def login(self, event=None):
         """
         Verifies the user's login credentials. If the credentials are incorrect, show a warning notice. Otherwise, login the user.
         """
-        if verify_login(self.username_field.get(), self.password_field.get()):  # If the user enters correct credentials
+        if self.Controller.VerifyLogin(self.username.get(), self.password.get()):  # If the user enters correct credentials
             self.login_screen.hide()    # Hide the login page
             self.work_screen.show()     # Show the work screen
         else:
