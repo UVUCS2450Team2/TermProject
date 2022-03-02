@@ -26,7 +26,7 @@
 ::ZQ0/vhVqMQ3MEVWAtB9wSA==
 ::Zg8zqx1/OA3MEVWAtB9wSA==
 ::dhA7pRFwIByZRRnk
-::Zh4grVQjdCyDJGyX8VAjFB5YQA2NAE+1BaAR7ebv/NbGsU4VW+0zRKzoiODbcNwn71fpRYQi3H9ZjPcfGBpKage7Uio5uUpDoiqAL8L8
+::Zh4grVQjdCyDJGyX8VAjFB5YQA2NAE+1BaAR7ebv/NbGsU4VW+0zRKzoiODbcNwn71fpRYQi3H9ZjPcpAQt8fwblaxcxyQ==
 ::YB416Ek+ZG8=
 ::
 ::
@@ -50,6 +50,7 @@ goto :INSTALL_REQUIREMENTS
 
 :INSTALL_REQUIREMENTS
 pip install pillow
+pip install tkinter
 goto :RUN_PROGRAM
 
 :RUN_PROGRAM

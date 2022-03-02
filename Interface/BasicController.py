@@ -7,7 +7,7 @@ from BackEnd.BackEnd import *
     This class implements functions from the Application Interface. 
     It is the first variant of the prototype.
 """
-from TermProject.Backend.Backend import *
+from BackEnd.BackEnd import *
 
 class BasicControlller(ApplicationInterface):
     def __init__(self):
