@@ -55,7 +55,6 @@ def run_payroll():
         emp.issue_payment()
 18
 class Employee:
-    '''This is the Employee class and is used to create employee objects'''
     def __init__(self, emp_id=None, f_name="First,", l_name="Last", address="", city="", state="", zipcode=00000, account=None, route=None, hourly=None, salary=None, commission=None, method=None, Class=None):
         self.emp_id = emp_id
         self.f_name = f_name
