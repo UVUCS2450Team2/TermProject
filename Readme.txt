@@ -1,6 +1,6 @@
 Requirements:
-	-Windows 10
-	-Python
+    -Windows 10
+    -Python
     -Tkinter module
     -Pillow module
 
