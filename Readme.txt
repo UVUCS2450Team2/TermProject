@@ -1,7 +1,10 @@
 Requirements:
 	-Windows 10
 	-Python
+    -Tkinter module
+    -Pillow module
 
-To start the program, just open the EmpDat shortcut in the root directory.
-    This should install all the necessary requirements to run the program.
-    If it does not install the requirements, then they must be added.
+Please ensure you have Tkinter and Pillow modules installed!
+
+
+To start the program, in a command prompt, enter the command 'python main.py'
