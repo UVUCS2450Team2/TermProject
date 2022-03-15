@@ -7,9 +7,20 @@ from BackEnd.empClass import Employee, Hourly, Salaried, Commissioned
 import Interface.BasicController
 import copy
 import random
+import sys
+import os
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
 
-folder_path = "FrontEnd\\Assets\\"
+    return os.path.join(base_path, relative_path)
+
+folder_path = resource_path("FrontEnd\\Assets\\")
 logo_large_path = folder_path+"logo_large.PNG"
 logo_small_path = folder_path+"logo_small.PNG"
 search_icon_path = folder_path+"search_icon.PNG"

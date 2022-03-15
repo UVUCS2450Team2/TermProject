@@ -46,19 +46,30 @@ from BackEnd.empClass import *
 
 from BackEnd.User import *
 
+import sys
+import os
 
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 class BackendImplementation:
     def __init__(self):
         self.EMP_DATA = []
         self.EMP_DICT = OrderedDict({})
         self.EMPfile = 0
-        self.EMPFilename = "BackEnd/employees.csv"
+        self.EMPFilename = resource_path("BackEnd/employees.csv")
 
         self.USER_DICT = OrderedDict({})
         self.USERfile = 0
-        self.USERFilename = "BackEnd/userlogin.csv"
+        self.USERFilename = resource_path("BackEnd/userlogin.csv")
 
 
         self.ActiveUser = None
@@ -74,7 +85,7 @@ class BackendImplementation:
             
         except:
             try:
-                self.USERfile = open("userlogin.csv", 'x')
+                self.USERfile = open(resource_path("userlogin.csv"), 'x')
                 self.USERfile.write("admin,password,ADD,EDIT,DELETE")
             except:
                 print("Login file was not found and could not be created.")
