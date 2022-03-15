@@ -38,6 +38,7 @@ class Window:
         self.Controller = Interface.BasicController.BasicControlller()
         # This section creates the basic window with a light gray background
         self.root = tk.Tk() ## Create the root window
+        self.root.bind_all('<F4>', self.change_colors)
         self.width = 1000   ## Define the root window's dimensions
         self.height = 600
         self.root.geometry("{}x{}+{}+{}".format(self.width, self.height,
@@ -49,6 +50,7 @@ class Window:
         self.icon_image_small = tk.PhotoImage(file=logo_small_path)
         self.root.iconphoto(False, self.icon_image_small)
         self.root.wm_minsize(self.width, self.height)       ## Limit the window so that it cannot be made smaller than its original size
+        self.color_index = 0
         
         # This section creates the white frame that goes on top of the light gray background
         self.main_frame = tk.Frame(self.root, bg=bg_color)  ## Create the main frame on the root
@@ -72,10 +74,11 @@ class Window:
         self.password_field.pack()
         self.password_field.bind("<Return>", self.login)
         self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))     ## Load in the logo image
-        self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=bg_color)     ## Create a logo container on the right frame of the two column frame
+        self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=skyblue)     ## Create a logo container on the right frame of the two column frame
         self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         ## Create the login button from image resource
-        self.login_button = tk.Button(self.login_frame, image=self.login_button_pic, bg=bg_color, activebackground=bg_color, bd=0, command=self.login)
-        self.login_button.pack(pady=10, expand=True, fill="both")
+        self.login_button = tk.Button(self.login_frame, image=self.login_button_pic, bg=skyblue, activebackground=bg_color, bd=0, command=self.login, width=223, height=38)
+        self.login_button.pack(pady=10)
+        self.login_button.pack_propagate(0)
         self.login_pic_container.pack()
         self.login_pic_container.place(relx=0.5, rely=0.5, anchor='c')  ## Center the logo in the right frame
 
@@ -109,14 +112,16 @@ class Window:
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
         self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
-                                        bg=bg_color, bd=0, foreground=bg_color, activebackground=bg_color,
+                                        bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
                                         command=lambda: Notice(self, "Under Development."))
-        self.payroll_button.pack(padx=100, pady=(50, 10), expand=True, fill="both")
+        self.payroll_button.pack(padx=100, pady=(50, 10))
+        self.payroll_button.pack_propagate(0)
         self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
         self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
-                                        bg=bg_color, bd=0, foreground=bg_color, activebackground=bg_color, 
+                                        bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
                                         command=lambda: Notice(self, "Under Development."))
-        self.user_guide_button.pack(padx=100, pady=(10, 50), expand=True, fill="both")
+        self.user_guide_button.pack(padx=100, pady=(10, 55))
+        self.user_guide_button.pack_propagate(0)
 
         self.corner5_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
         self.corner5_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner5_image, bg=bg_color, bd=0) ### Add rounded corners to the body frame
@@ -156,16 +161,18 @@ class Window:
         self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
         self.manage_emp_frame.pack_propagate(0)
         self.add_button_image = ImageTk.PhotoImage(Image.open(add_button_path).resize((225, 50)))
-        self.emp_add_btn = tk.Button(self.manage_emp_frame, bg=bg_color, foreground=bg_color, image=self.add_button_image,
+        self.emp_add_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, image=self.add_button_image, width=223, height=48,
                                         font=title_font, bd=0, command=self.add)  #### Create Add button on employee management frame
         self.emp_add_btn.pack(side='left', padx=0)
+        self.emp_add_btn.pack_propagate(0)
         #self.emp_edit_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text=" Edit ",
         #                                font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Edit button on employee management frame
         #self.emp_edit_btn.pack(side='left', expand=True, fill='both', padx=10)
         self.delete_button_image = ImageTk.PhotoImage(Image.open(delete_button_path).resize((225, 50)))
-        self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=bg_color, foreground=bg_color, image=self.delete_button_image,
+        self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, image=self.delete_button_image, width=223, height=48,
                                             font=title_font, bd=0, command=self.delete)  #### Create Delete button on employee management frame
         self.emp_delete_btn.pack(side='right')
+        self.emp_delete_btn.pack_propagate(0)
         self.full_list = self.request_employees()        #### Populate the listbox with the full list of employee initially
         self.visible_list = self.request_employees()     #### Show the current requested employees
         self.update_search_listbox()        #### Update the search box based on the entered information
@@ -175,7 +182,7 @@ class Window:
         self.entry_length = 35
         self.emp_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((100, 100)))       #### This should later call the backend to provide the employee's photo
         self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,      #### Put the employee photo in a container on the right side of the employees tab
-                                          image=self.emp_pic, borderwidth=2, relief="groove")
+                                          image=self.emp_pic, borderwidth=2, relief="groove", bg=skyblue)
         self.emp_pic_container.pack(side="top", pady=25)
 
         self.work_screen.tabs[1].body_frame.right_frame.configure(bd=self.indent_amount)
@@ -317,7 +324,6 @@ class Window:
         else:
             self.emp_name_label.configure(text="")
 
-
     def update_search_listbox(self):
         """
         Updates the listbox to show only employess who are in the visible list
@@ -365,6 +371,27 @@ class Window:
         self.emp_search_field.delete(0, tk.END)
         self.update_search_listbox()
 
+    def change_colors(self, event):
+        colors = [
+            skyblue,
+            'purple',
+            'red',
+            'orange',
+            'green'            
+        ]
+        colored_image_containers = [
+            self.login_pic_container,
+            self.login_button,
+            self.payroll_button,
+            self.user_guide_button,
+            self.emp_add_btn,
+            self.emp_delete_btn,
+            self.emp_pic_container
+        ]
+        self.color_index = (self.color_index + 1) % len(colors)
+        for container in colored_image_containers:
+            container.configure(bg=colors[self.color_index])
+        
 
 class Widget(ABC):
     """
