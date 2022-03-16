@@ -1,4 +1,3 @@
-from ctypes import WinDLL
 import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
