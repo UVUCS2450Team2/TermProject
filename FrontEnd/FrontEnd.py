@@ -8,6 +8,7 @@ import copy
 import random
 import sys
 import os
+import platform
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -19,7 +20,12 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
 folder_path = resource_path("FrontEnd\\Assets\\")
+
+if 'Darwin' in platform.system():
+    folder_path = resource_path("FrontEnd/Assets/")
+    
 logo_large_path = folder_path+"logo_large.PNG"
 logo_small_path = folder_path+"logo_small.PNG"
 search_icon_path = folder_path+"search_icon.PNG"

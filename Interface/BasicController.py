@@ -42,7 +42,7 @@ class BasicControlller(ApplicationInterface):
         """
             This function creates an exported CSV file of the employees payroll. Returns boolean for success
         """
-        pass
+        self.Backend.generatePayroll()
 
     def add_employee(self, emp):
         """
@@ -71,5 +71,12 @@ class BasicControlller(ApplicationInterface):
             These actions have a string name and must be used uniformly.
         """
         return self.Backend.VerifyPermission(action)
+    
+
+    def is_admin(self):
+        """
+            This function asks the backend if the current logged in user is an admin, this is used to verify rights and show particular views
+        """
+        return self.Backend.is_admin()
 
 

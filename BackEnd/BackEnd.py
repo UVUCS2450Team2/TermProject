@@ -36,6 +36,13 @@
     username, password, action, action,..., action
 
     This is my take on handling permissions.
+
+
+
+    In regards to timecards and receipts:
+
+    We will limit the timeframe to calculate the payroll to one month, meaning that timecards and receipts should have enough information
+    to income in a given month.
 """
 
 from collections import *
@@ -71,6 +78,17 @@ class BackendImplementation:
         self.USERfile = 0
         self.USERFilename = resource_path("BackEnd/userlogin.csv")
 
+        self.TimeCard_DICT = OrderedDict({})
+        self.TimeCardFilename = resource_path("Backend/timecards.csv")
+        self.TimeCardfile = 0
+
+        self.Reciepts_DICT = OrderedDict({})
+        self.RecieptsFilename = resource_path("Backend/reciepts.csv")
+        self.Recieptsfile = 0
+
+        self.PayrollFilename = resource_path("Backend/Payroll.csv")
+        self.PayrollFile = 0
+
 
         self.ActiveUser = None
 
@@ -86,13 +104,19 @@ class BackendImplementation:
         except:
             try:
                 self.USERfile = open(resource_path("userlogin.csv"), 'x')
-                self.USERfile.write("admin,password,ADD,EDIT,DELETE")
+                self.USERfile.write("admin,password,True,ADD,EDIT,DELETE")
             except:
                 print("Login file was not found and could not be created.")
+        
+        try:
+            self.TimeCardfile = open(self.TimeCardFilename, 'r')
+        except:
+            print("Timecard file was not found!")
 
      
         self.Read_LoginData()
         self.Read_EmployeeData()
+        self.read_Timecards()
         
 
     def Read_LoginData(self):
@@ -106,9 +130,12 @@ class BackendImplementation:
 
             words[len(words)-1] = words[len(words)-1].split('\n')[0]
 
-            self.USER_DICT[words[0]] = User(words[0], words[1], words[2:])
+            if 'True' in words[2]:
+                self.USER_DICT[words[0]] = Admin(words[0], words[1], words[3:])    
+            else:
+                self.USER_DICT[words[0]] = User(words[0], words[1], words[3:])
 
-
+    
     def Read_EmployeeData(self):
         """
         Reads the employee.csv file and parses the information into the empClass data structure array
@@ -176,6 +203,33 @@ class BackendImplementation:
             
         return
 
+    def read_Timecards(self):
+        lines = self.TimeCardfile.readlines()
+
+        for line in lines:
+            words = line.split(',')
+            words[len(words)-1] = words[len(words)-1].split('\n')[0]
+
+            hours = []
+            try:
+                for el in words:
+                    hours.append(float(el))
+            except:
+                print("Something went wrong parsing the timecards, is the data valid?")
+            
+            self.TimeCard_DICT[words[0]] = hours[1:]
+
+        
+       
+    
+    def read_Receipts(self):
+        pass
+
+    def generatePayroll(self):
+        self.PayrollFile = open(self.PayrollFilename, 'w')
+
+        self.PayrollFile.write("ID,Name,Address,Employee Type,Payment")
+        
     
     def IsUserValid(self, username):
         """
@@ -306,6 +360,9 @@ class BackendImplementation:
         for user in self.USER_DICT:
             print(user)
             self.USER_DICT[user].Dump()
+
+    def is_admin(self):
+            return self.ActiveUser.isAdmin
 
 def main():
     test = BackendImplementation()
