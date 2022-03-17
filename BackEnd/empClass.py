@@ -111,6 +111,9 @@ class Classification:
     def compute_pay(self):
         '''This function is passed on to the child class'''
         pass
+
+    def asString(self):
+        """Identifies a classification as a string"""
 class Hourly(Classification):
     '''This Classification is for Hourly employees'''
     def __init__(self, hourly_rate):

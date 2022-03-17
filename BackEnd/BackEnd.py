@@ -118,6 +118,7 @@ class BackendImplementation:
         self.Read_EmployeeData()
         self.read_Timecards()
         
+        
 
     def Read_LoginData(self):
         """
@@ -204,6 +205,10 @@ class BackendImplementation:
         return
 
     def read_Timecards(self):
+        """
+            Read timecards.csv, parsing the text by removing the commas and new line character.
+            Converting the array of strings into an array of floats and adding it to TimeCard_Dict for easy lookup
+        """
         lines = self.TimeCardfile.readlines()
 
         for line in lines:
@@ -219,8 +224,15 @@ class BackendImplementation:
             
             self.TimeCard_DICT[words[0]] = hours[1:]
 
-        
-       
+            """
+                To append hours to an employee:
+                employee.classification.add_timecards(float)
+
+                if 'hourly' in employee.classification.AsString():
+                     employee.classification.add_timecards(float)
+
+            """
+
     
     def read_Receipts(self):
         pass
@@ -228,8 +240,16 @@ class BackendImplementation:
     def generatePayroll(self):
         self.PayrollFile = open(self.PayrollFilename, 'w')
 
+        """
+        emppay = employee.classification.computepay()
+
+        """
+
         self.PayrollFile.write("ID,Name,Address,Employee Type,Payment")
-        
+
+        for empl in self.EMP_DICT:
+            #self.PayrollFile.write(key, emp.Name, emp.Address, emp.classification.asString(), emp.classification.computepay())
+            pass
     
     def IsUserValid(self, username):
         """
