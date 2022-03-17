@@ -1,3 +1,4 @@
+import imp
 import tkinter as tk
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
@@ -8,6 +9,7 @@ import copy
 import random
 import sys
 import os
+import platform
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -19,7 +21,11 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-folder_path = resource_path("FrontEnd\\Assets\\")
+if 'Darwin' in platform.system():
+    folder_path = resource_path("FrontEnd/Assets_mac/")
+else:
+    folder_path = resource_path("FrontEnd\\Assets\\")
+
 logo_large_path = folder_path+"logo_large.PNG"
 logo_small_path = folder_path+"logo_small.PNG"
 search_icon_path = folder_path+"search_icon.PNG"
@@ -93,23 +99,24 @@ class Window:
         self.login_pic_container.place(relx=0.5, rely=0.5, anchor='c')  ## Center the logo in the right frame
 
         ## Add rounded corners to login screen
-        self.base_corner_image = Image.open(corner_image_path).resize((35, 35))     ### Load in the base corner image
+        if not isMAC():
+            self.base_corner_image = Image.open(corner_image_path).resize((35, 35))     ### Load in the base corner image
 
-        self.corner1_image = ImageTk.PhotoImage(self.base_corner_image)
-        self.corner1_container = tk.Label(self.login_screen.left_frame, image=self.corner1_image, bg=bg_color, bd=0)    ### Place corner1
-        self.corner1_container.pack(side="top", anchor="nw")
+            self.corner1_image = ImageTk.PhotoImage(self.base_corner_image)
+            self.corner1_container = tk.Label(self.login_screen.left_frame, image=self.corner1_image, bg=bg_color, bd=0)    ### Place corner1
+            self.corner1_container.pack(side="top", anchor="nw")
 
-        self.corner2_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
-        self.corner2_container = tk.Label(self.login_screen.left_frame, image=self.corner2_image, bg=bg_color, bd=0)    ### Rotate and place corner2
-        self.corner2_container.pack(side="bottom", anchor="sw")
+            self.corner2_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
+            self.corner2_container = tk.Label(self.login_screen.left_frame, image=self.corner2_image, bg=bg_color, bd=0)    ### Rotate and place corner2
+            self.corner2_container.pack(side="bottom", anchor="sw")
 
-        self.corner3_image = ImageTk.PhotoImage(self.base_corner_image.rotate(270))
-        self.corner3_container = tk.Label(self.login_screen.right_frame, image=self.corner3_image, bg=bg_color, bd=0)   ### Rotate and place corner3
-        self.corner3_container.pack(side="top", anchor="ne")
+            self.corner3_image = ImageTk.PhotoImage(self.base_corner_image.rotate(270))
+            self.corner3_container = tk.Label(self.login_screen.right_frame, image=self.corner3_image, bg=bg_color, bd=0)   ### Rotate and place corner3
+            self.corner3_container.pack(side="top", anchor="ne")
 
-        self.corner4_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
-        self.corner4_container = tk.Label(self.login_screen.right_frame, image=self.corner4_image, bg=bg_color, bd=0)   ### Rotate and place corner4
-        self.corner4_container.pack(side="bottom", anchor="se")
+            self.corner4_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
+            self.corner4_container = tk.Label(self.login_screen.right_frame, image=self.corner4_image, bg=bg_color, bd=0)   ### Rotate and place corner4
+            self.corner4_container.pack(side="bottom", anchor="se")
 
         self.login_screen.show()    ## show the login screen frame
         
@@ -133,13 +140,14 @@ class Window:
         self.user_guide_button.pack(padx=100, pady=(10, 55))
         self.user_guide_button.pack_propagate(0)
 
-        self.corner5_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
-        self.corner5_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner5_image, bg=bg_color, bd=0) ### Add rounded corners to the body frame
-        self.corner5_container.pack(side="left")
+        if not isMAC():
+            self.corner5_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
+            self.corner5_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner5_image, bg=bg_color, bd=0) ### Add rounded corners to the body frame
+            self.corner5_container.pack(side="left")
 
-        self.corner6_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
-        self.corner6_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner6_image, bg=bg_color, bd=0)
-        self.corner6_container.pack(side="right")
+            self.corner6_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
+            self.corner6_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner6_image, bg=bg_color, bd=0)
+            self.corner6_container.pack(side="right")
 
         self.work_screen.tabs[0].show_body()    ### Show the tab 1 body
         
@@ -510,13 +518,14 @@ class Tab(Widget):
         self.body_frame = None # This will later be filled with a reference to a frame object
         self.tab_frame = tk.Frame(frame.tabs_frame, bg=bg_color) # A frame to hold the tab button
 
-        self.corner_left_image = ImageTk.PhotoImage(Image.open(corner_image_path).resize((35, 35)))
-        self.corner_left_container = tk.Label(self.tab_frame, image=self.corner_left_image, bg=bg_color, bd=0)
-        self.corner_left_container.pack(side="left", anchor="nw")
+        if not isMAC():
+            self.corner_left_image = ImageTk.PhotoImage(Image.open(corner_image_path).resize((35, 35)))
+            self.corner_left_container = tk.Label(self.tab_frame, image=self.corner_left_image, bg=bg_color, bd=0)
+            self.corner_left_container.pack(side="left", anchor="nw")
 
-        self.corner_right_image = ImageTk.PhotoImage(Image.open(corner_image_path).resize((35, 35)).rotate(270))
-        self.corner_right_container = tk.Label(self.tab_frame, image=self.corner_right_image, bg=bg_color, bd=0)
-        self.corner_right_container.pack(side="right", anchor="ne")
+            self.corner_right_image = ImageTk.PhotoImage(Image.open(corner_image_path).resize((35, 35)).rotate(270))
+            self.corner_right_container = tk.Label(self.tab_frame, image=self.corner_right_image, bg=bg_color, bd=0)
+            self.corner_right_container.pack(side="right", anchor="ne")
 
         self.tab_button = tk.Button(self.tab_frame, text="Tab", bg=bg_color2, font=title_font, bd=0, activebackground=bg_color2,
                                     command=lambda: frame.focus_tab(self))
@@ -541,8 +550,9 @@ class Tab(Widget):
         Show the body frame that is attached to this tab
         """
         self.tab_button.pack_forget()   # Disable the tab button
-        self.corner_left_container.pack(side="left", anchor="nw")   # Add in the rounded corners
-        self.corner_right_container.pack(side="right", anchor="ne")
+        if not isMAC():
+            self.corner_left_container.pack(side="left", anchor="nw")   # Add in the rounded corners
+            self.corner_right_container.pack(side="right", anchor="ne")
         self.tab_button.pack(fill="both", expand=True)  # Re-enable the tab button
         if isinstance(self.body_frame, tk.Frame):
             self.body_frame.pack(fill="both", expand=True)
@@ -560,8 +570,9 @@ class Tab(Widget):
         elif isinstance(self.body_frame, TwoColumnFrame):
             self.body_frame.hide()
         self.tab_button.configure(bg=bg_color2) # Hide the tab button
-        self.corner_left_container.pack_forget()    # Hide the rounded corners
-        self.corner_right_container.pack_forget()
+        if not isMAC():
+            self.corner_left_container.pack_forget()    # Hide the rounded corners
+            self.corner_right_container.pack_forget()
         self.tab_button.configure(bg=bg_color2, activebackground=bg_color2)
 
 
@@ -641,3 +652,8 @@ class Confirmation(Popup):
         Commands to execute if the confirmation is negative
         """
         self.close()    # Close the popup
+
+def isMAC():
+    if 'Darwin' in platform.system():
+        return True
+    return False
