@@ -134,6 +134,13 @@ class Hourly(Classification):
         self.timecard = []
         total += round(total_hours_worked * float(self.hourly_rate), 2)
         return total
+    def asString(self):
+        '''Returns a string identifying the employees class'''
+        employee_type = "Hourly"
+        if isinstance(Employee, Hourly):
+            return employee_type
+        else:
+            print("Wrong employee type")
 class Salaried(Classification):
     '''This is the classification of a salaried employee'''
     def __init__(self, salary):
@@ -144,6 +151,13 @@ class Salaried(Classification):
         total = 0
         total += round(self.salary / 24, 2)
         return total
+    def asString(self):
+        '''Returns a string identifying the employees class'''
+        employee_type = "Salaried"
+        if isinstance(Employee, Salaried):
+            return employee_type
+        else:
+            print("Wrong employee type")
 class Commissioned(Salaried):
     '''This is the Classification of an employee who is Commissioned'''
     def __init__(self, salary, percentage):
@@ -167,3 +181,10 @@ class Commissioned(Salaried):
     def add_receipt(self, receipt):
         '''This function adds a receipt to a list'''
         self.receipt.append(receipt)
+    def asString(self):
+        '''Returns a string identifying the employees class'''
+        employee_type = "Commissioned"
+        if isinstance(Employee, Commissioned):
+            return employee_type
+        else:
+            print("Wrong employee type")

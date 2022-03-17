@@ -235,8 +235,21 @@ class BackendImplementation:
 
     
     def read_Receipts(self):
-        pass
-
+        '''Reads the receipts.csv and parses the file and stores the receipts in
+            a dictionary. The key is the employee id the values are the values of 
+            the receipts.
+        '''
+        lines = self.RecieptsFilename.readlines()
+        for line in lines:
+            words = line.strip().split(",")
+            receipts = []
+            try:
+                for receipt in words:
+                    receipts.append(float(receipt))
+            except:
+                print("Unable to parse receipts. Check if data is valid")
+            self.Reciepts_DICT[words[0]] = receipts[1:]
+            
     def generatePayroll(self):
         self.PayrollFile = open(self.PayrollFilename, 'w')
 
