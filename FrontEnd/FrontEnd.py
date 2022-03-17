@@ -51,6 +51,13 @@ class Window:
         """
         Initial setup of all the necessary frames for the GUI
         """
+        self.colors = [
+            skyblue,
+            'purple',
+            'red',
+            'orange',
+            'green'            
+        ]
         self.Controller = Interface.BasicController.BasicControlller()
         # This section creates the basic window with a light gray background
         self.root = tk.Tk() ## Create the root window
@@ -79,12 +86,12 @@ class Window:
         self.login_frame.pack()
         self.login_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center the login frame on the left column
         self.username = tk.StringVar()
-        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font)     ## Create the username label and button
+        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font, fg='black')     ## Create the username label and button
         self.username_label.pack()
         self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, textvariable=self.username, fg='black')
         self.username_field.pack()
         self.password = tk.StringVar()
-        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font)     ## Create the password label and button
+        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font, fg='black')     ## Create the password label and button
         self.password_label.pack()
         self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*", textvariable=self.password, fg='black')
         self.password_field.pack()
@@ -130,13 +137,13 @@ class Window:
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
         self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
-                                        command=lambda: Notice(self, "Under Development."))
+                                        command=lambda: Notice(self, "Under Development.", self.colors[self.color_index]))
         self.payroll_button.pack(padx=100, pady=(50, 10))
         self.payroll_button.pack_propagate(0)
         self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
         self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
-                                        command=lambda: Notice(self, "Under Development."))
+                                        command=lambda: Notice(self, "Under Development.", self.colors[self.color_index]))
         self.user_guide_button.pack(padx=100, pady=(10, 55))
         self.user_guide_button.pack_propagate(0)
 
@@ -294,7 +301,7 @@ class Window:
             self.login_screen.hide()    # Hide the login page
             self.work_screen.show()     # Show the work screen
         else:
-            popup = Notice(self, "Incorrect username or password.")     # Otherwise, tell the user they have entered the wrong credentials
+            popup = Notice(self, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
     
     def search_keyrelease(self, event):
         """
@@ -370,6 +377,9 @@ class Window:
         new_name = self.emp_name.get().split()  # Get all the new data from tk entries
         new_payment_type = self.emp_payment.get().lower()
         new_payment_amount = self.emp_salary.get()
+        if not new_payment_amount.isnumeric():
+            Notice(self, "Payment amount must be a number", self.colors[self.color_index])
+            return
         new_address = self.emp_address.get()
 
         empID = self.current_working_employee.emp_id
@@ -390,13 +400,7 @@ class Window:
         self.update_search_listbox()
 
     def change_colors(self, event):
-        colors = [
-            skyblue,
-            'purple',
-            'red',
-            'orange',
-            'green'            
-        ]
+        
         colored_image_containers = [
             self.login_pic_container,
             self.login_button,
@@ -406,9 +410,10 @@ class Window:
             self.emp_delete_btn,
             self.emp_pic_container
         ]
-        self.color_index = (self.color_index + 1) % len(colors)
+        self.color_index = (self.color_index + 1) % len(self.colors)
         for container in colored_image_containers:
-            container.configure(bg=colors[self.color_index])
+            container.configure(bg=self.colors[self.color_index])
+        self.emp_box.configure(selectbackground=self.colors[self.color_index])
         
 
 class Widget(ABC):
@@ -615,13 +620,13 @@ class Notice(Popup):
     """
     This class creates a notice popup with a mesage and acknowledgement button
     """
-    def __init__(self, master, message):
+    def __init__(self, master, message, color):
         """
         Initialize and show the notice popup
         """
         super().__init__(master, message)  # Run super init
-        self.popup.okay_button = tk.Button(self.popup.main_frame, text="Okay", bg=skyblue, bd=0,
-                                      foreground=bg_color, font=basic_font, command=self.close, fg='black') # A button to close the notice
+        self.popup.okay_button = tk.Button(self.popup.main_frame, text="Okay", bg=color, bd=0,
+                                      foreground=color, font=basic_font, command=self.close, fg='black') # A button to close the notice
         self.popup.okay_button.pack(side="bottom", pady=5)
 
 
