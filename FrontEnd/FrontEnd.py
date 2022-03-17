@@ -75,12 +75,12 @@ class Window:
         self.username = tk.StringVar()
         self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font)     ## Create the username label and button
         self.username_label.pack()
-        self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, textvariable=self.username)
+        self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, textvariable=self.username, fg='black')
         self.username_field.pack()
         self.password = tk.StringVar()
         self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font)     ## Create the password label and button
         self.password_label.pack()
-        self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*", textvariable=self.password)
+        self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*", textvariable=self.password, fg='black')
         self.password_field.pack()
         self.password_field.bind("<Return>", self.login)
         self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))     ## Load in the logo image
@@ -152,13 +152,13 @@ class Window:
         self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2) #### Create a listbox frame on the left frame of the employees tab
         self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,10))
         self.listbox_frame.pack_propagate(0)
-        self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font)    #### Create a search field and attach it to the listbox
+        self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font, fg='black')    #### Create a search field and attach it to the listbox
         self.emp_search_field.bind("<KeyRelease>", self.search_keyrelease) # Create event listenter for the search field
         self.emp_search_field.pack(side='top', fill='both', padx=10, pady=(10,0))
         self.search_pic = ImageTk.PhotoImage(Image.open(search_icon_path).resize((25, 25)))
         self.search_pic_container = tk.Label(self.emp_search_field, image=self.search_pic, bd=0)    #### Add a search icon to the search field
         self.search_pic_container.pack(side='right', fill='both')
-        self.emp_box = tk.Listbox(self.listbox_frame, bd=0, bg=bg_color2, activestyle='none', font=basic_font, 
+        self.emp_box = tk.Listbox(self.listbox_frame, bd=0, bg=bg_color2, activestyle='none', font=basic_font, fg='black', 
                                     selectbackground=skyblue, highlightcolor=bg_color2, highlightbackground=bg_color2,  #### Create a employee listbox and attach it to the listbox frame
                                     highlightthickness=10, selectforeground='black')
         self.emp_box_scroller = tk.Scrollbar(self.emp_box, command=self.emp_box.yview)      #### Create a scroll bar and attach it to the employee listbox
@@ -201,9 +201,9 @@ class Window:
         self.emp_name_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_name_label_container.pack(pady=5, fill="x")
         self.emp_name_label = tk.Label(self.emp_name_label_container, font=basic_font,    #### Add a field for the employee's name
-                                       bg=bg_color2, text="Employee:")
+                                       bg=bg_color2, text="Employee:", fg='black')
         self.emp_name_label.pack(side="left")
-        self.emp_name_entry = tk.Entry(self.emp_name_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_name, width=self.entry_length)
+        self.emp_name_entry = tk.Entry(self.emp_name_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_name, width=self.entry_length, fg='black')
         self.emp_name_entry.pack(side="left", fill="x")
         self.emp_name_entry.bind("<Return>", self.update_working_employee)
 
@@ -211,9 +211,9 @@ class Window:
         self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_payment_label_container.pack(pady=5, fill="x")
         self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a field for the employee's pay amount
-                                         bg=bg_color2, text="Payment type:")
+                                         bg=bg_color2, text="Payment type:", fg='black')
         self.emp_payment_label.pack(side="left")
-        self.emp_payment_entry = tk.Entry(self.emp_payment_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_payment, width=self.entry_length)
+        self.emp_payment_entry = tk.Entry(self.emp_payment_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_payment, width=self.entry_length, fg='black')
         self.emp_payment_entry.pack(side="left", fill="x")
         self.emp_payment_entry.bind("<Return>", self.update_working_employee)
 
@@ -221,9 +221,9 @@ class Window:
         self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_salary_label_container.pack(pady=5, fill="x")
         self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a field for the employee's payment type
-                                         bg=bg_color2, text="Amount:")
+                                         bg=bg_color2, text="Amount:", fg='black')
         self.emp_salary_label.pack(side="left")
-        self.emp_salary_entry = tk.Entry(self.emp_salary_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_salary, width=self.entry_length)
+        self.emp_salary_entry = tk.Entry(self.emp_salary_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_salary, width=self.entry_length, fg='black')
         self.emp_salary_entry.pack(side="left", fill="x")
         self.emp_salary_entry.bind("<Return>", self.update_working_employee)
 
@@ -231,9 +231,9 @@ class Window:
         self.emp_address_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_address_label_container.pack(pady=5, fill="x")
         self.emp_address_label = tk.Label(self.emp_address_label_container, font=basic_font,  #### Add a field for the employee's address
-                                         bg=bg_color2, text="Address:")
+                                         bg=bg_color2, text="Address:", fg='black')
         self.emp_address_label.pack(side="left")
-        self.emp_address_entry = tk.Entry(self.emp_address_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_address, width=self.entry_length)
+        self.emp_address_entry = tk.Entry(self.emp_address_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_address, width=self.entry_length, fg='black')
         self.emp_address_entry.pack(side="left", fill="x")
         self.emp_address_entry.bind("<Return>", self.update_working_employee)
         
@@ -589,7 +589,7 @@ class Popup:
         self.popup.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
         self.popup.main_frame.pack_propagate(0)
         
-        self.popup.message_label = tk.Label(self.popup.main_frame, text=message, bg=bg_color, font=basic_font) # Display a message
+        self.popup.message_label = tk.Label(self.popup.main_frame, text=message, bg=bg_color, font=basic_font, fg='black') # Display a message
         self.popup.message_label.pack(side="top", pady=(5, 0))
         self.popup.message_label.pack_propagate(0)
         
@@ -610,7 +610,7 @@ class Notice(Popup):
         """
         super().__init__(master, message)  # Run super init
         self.popup.okay_button = tk.Button(self.popup.main_frame, text="Okay", bg=skyblue, bd=0,
-                                      foreground=bg_color, font=basic_font, command=self.close) # A button to close the notice
+                                      foreground=bg_color, font=basic_font, command=self.close, fg='black') # A button to close the notice
         self.popup.okay_button.pack(side="bottom", pady=5)
 
 
@@ -624,10 +624,10 @@ class Confirmation(Popup):
         """
         super().__init__(master, message) # Run super init
         self.popup.yes_button = tk.Button(self.popup.main_frame, text="Yes", bg=skyblue, bd=0,
-                                            foreground=bg_color, font=basic_font, command=self.yes) # A button to confirm the action
+                                            foreground=bg_color, font=basic_font, command=self.yes, fg='black') # A button to confirm the action
         self.popup.yes_button.pack(side="left", padx=(90, 5), pady=5)
         self.popup.no_button = tk.Button(self.popup.main_frame, text="No", bg=skyblue, bd=0,
-                                            foreground=bg_color, font=basic_font, command=self.no) # A button to decline the action
+                                            foreground=bg_color, font=basic_font, command=self.no, fg='black') # A button to decline the action
         self.popup.no_button.pack(side="right", padx=(5, 90), pady=5)
 
     def yes(self):
