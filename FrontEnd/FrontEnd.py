@@ -225,17 +225,21 @@ class Window:
         self.emp_payment = tk.StringVar()
         self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_payment_label_container.pack(pady=5, fill="x")
-        self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a field for the employee's pay amount
+        self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a field for the employee's payment type
                                          bg=bg_color2, text="Payment type:", fg='black')
         self.emp_payment_label.pack(side="left")
-        self.emp_payment_entry = tk.Entry(self.emp_payment_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_payment, width=self.entry_length, fg='black')
-        self.emp_payment_entry.pack(side="left", fill="x")
-        self.emp_payment_entry.bind("<Return>", self.update_working_employee)
+        self.payment_types = ["Hourly", "Salaried", "Commissioned"]
+        self.emp_payment_type_optionlist = tk.OptionMenu(self.emp_payment_label_container, self.emp_payment, *self.payment_types)
+        self.emp_payment_type_optionlist.pack(side="left", fill="x")
+        self.emp_payment_type_optionlist.bind("<Return>", self.update_working_employee)
+        #self.emp_payment_entry = tk.Entry(self.emp_payment_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_payment, width=self.entry_length, fg='black')
+        #self.emp_payment_entry.pack(side="left", fill="x")
+        #self.emp_payment_entry.bind("<Return>", self.update_working_employee)
 
         self.emp_salary = tk.StringVar()
         self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_salary_label_container.pack(pady=5, fill="x")
-        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a field for the employee's payment type
+        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a field for the employee's pay amount
                                          bg=bg_color2, text="Amount:", fg='black')
         self.emp_salary_label.pack(side="left")
         self.emp_salary_entry = tk.Entry(self.emp_salary_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_salary, width=self.entry_length, fg='black')
@@ -327,19 +331,20 @@ class Window:
             self.emp_name_entry.delete(0, last="end")
             self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab
 
-            self.emp_payment_entry.delete(0, tk.END)
+            #self.emp_payment_entry.delete(0, tk.END)
             self.emp_classification = self.current_working_employee.classification
             if isinstance(self.emp_classification, Hourly): self.emp_classification = "Hourly"
             elif isinstance(self.emp_classification, Salaried): self.emp_classification = "Salaried"
             elif isinstance(self.emp_classification, Commissioned): self.emp_classification = "Commissioned"
             else: self.emp_classification = "Unknown"
-            self.emp_payment_entry.insert(0, self.emp_classification)
+            self.emp_payment.set(self.emp_classification)
+            #self.emp_payment_entry.insert(0, self.emp_classification)
 
             self.emp_salary_entry.delete(0, tk.END)
             self.emp_pay_amount = ""
             if (self.emp_classification == "Hourly"): self.emp_pay_amount = self.current_working_employee.hourly
-            elif (self.emp_classification == "Salaried"): self.emp_pay_amount = self.current_working_employee.salaried
-            elif (self.emp_classification == "Commissioned"): self.emp_pay_amount = self.current_working_employee.commissioned
+            elif (self.emp_classification == "Salaried"): self.emp_pay_amount = self.current_working_employee.salary
+            elif (self.emp_classification == "Commissioned"): self.emp_pay_amount = self.current_working_employee.commission
             else: self.emp_pay_amount = "Unknown"
             self.emp_salary_entry.insert(0, self.emp_pay_amount)
 
@@ -377,7 +382,7 @@ class Window:
         new_name = self.emp_name.get().split()  # Get all the new data from tk entries
         new_payment_type = self.emp_payment.get().lower()
         new_payment_amount = self.emp_salary.get()
-        if not new_payment_amount.isnumeric():
+        if not (new_payment_amount.isnumeric() or isfloat(new_payment_amount)):
             Notice(self, "Payment amount must be a number", self.colors[self.color_index])
             return
         new_address = self.emp_address.get()
@@ -657,6 +662,13 @@ class Confirmation(Popup):
         Commands to execute if the confirmation is negative
         """
         self.close()    # Close the popup
+
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
 
 def isMAC():
     if 'Darwin' in platform.system():
