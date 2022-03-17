@@ -117,7 +117,7 @@ class BackendImplementation:
         self.Read_LoginData()
         self.Read_EmployeeData()
         self.read_Timecards()
-        
+        self.generatePayroll()
         
 
     def Read_LoginData(self):
@@ -188,16 +188,16 @@ class BackendImplementation:
 
          
 
-            emp = Employee(int(words[0]), fname, lname, words[2], words[3], words[4], int(words[5]), words[12], words[11], words[9], words[8], words[10], words[7], words[6])
+            emp = Employee(int(words[0]), fname, lname, words[2], words[3], words[4], int(words[5]), words[12], words[11], words[9], words[8], words[10], words[7], int(words[6]))
 
-
-            if int(words[6]) == 1:
-                emp.make_hourly(float(words[9]))
-            elif int(words[6] == 2):
-                emp.make_salaried(int(words[8]))
-            elif int(words[6] == 3):
-                emp.make_commissioned(float(words[9], float(words[11])))
-              
+            """
+                    if int(words[6]) == 1:
+                        emp.make_hourly(float(words[9]))
+                    elif int(words[6] == 2):
+                        emp.make_salaried(int(words[8]))
+                    elif int(words[6] == 3):
+                        emp.make_commissioned(float(words[9], float(words[11])))
+            """       
 
             self.EMP_DICT[int(words[0])] = emp
 
@@ -224,6 +224,20 @@ class BackendImplementation:
             
             self.TimeCard_DICT[words[0]] = hours[1:]
 
+            if not int(words[0]) in self.EMP_DICT:
+                return False
+
+            emp = self.EMP_DICT[int(words[0])]
+
+            try:
+                if not "Hourly" in emp.classification.asString():
+                    return False
+            except:
+                return False
+
+            for hour in hours[1:]:
+                emp.classification.add_timecard(hour)
+
             """
                 To append hours to an employee:
                 employee.classification.add_timecards(float)
@@ -232,6 +246,7 @@ class BackendImplementation:
                      employee.classification.add_timecards(float)
 
             """
+        return True
 
     
     def read_Receipts(self):
@@ -251,19 +266,26 @@ class BackendImplementation:
             self.Reciepts_DICT[words[0]] = receipts[1:]
             
     def generatePayroll(self):
-        self.PayrollFile = open(self.PayrollFilename, 'w')
+        try:
+
+            self.PayrollFile = open(self.PayrollFilename, 'w')
+        except:
+            print("Failed to open Payroll file")
+            return
 
         """
         emppay = employee.classification.computepay()
 
         """
 
-        self.PayrollFile.write("ID,Name,Address,Employee Type,Payment")
+        self.PayrollFile.write("ID,Name,Address,Employee Type,Payment\n")
 
         for empl in self.EMP_DICT:
+            empl = self.EMP_DICT[empl]
             #self.PayrollFile.write(key, emp.Name, emp.Address, emp.classification.asString(), emp.classification.computepay())
-            pass
-    
+            self.PayrollFile.write(str(empl.emp_id) + "," +  empl.f_name + " " + empl.l_name + "," + empl.address + "," + empl.classification.asString() + "," + str(empl.classification.compute_pay()) + '\n')
+        
+        self.PayrollFile.close()
     def IsUserValid(self, username):
         """
             A function to quickly find if a user exists in memory
@@ -298,9 +320,13 @@ class BackendImplementation:
 
     def AddEmployee(self, emp):
         """
-            Add a new employee to the data structure array
+            Add a new employee to the data structure array, verifies the employee information first
         """
+
+        if not self.VerifyEmployeeInformation(emp):
+            return False
         self.EMP_DICT[emp.emp_id] = emp
+        return True
 
     
     def UpdateEmployee(self, empID, emp):
@@ -384,6 +410,18 @@ class BackendImplementation:
         print("DUMPING EMPLOYEES")
         for emp in self.EMP_DICT:
             self.EMP_DICT[emp].Dump()
+    
+    def VerifyEmployeeInformation(self, emp):
+        if not str(emp.emp_id).is_numeric():
+            return False
+        if not str(emp.zipcode).is_numeric():
+            return False
+        try:
+            emp.Classification.asString()
+        except:
+            return False
+        
+        return True
 
     def DumpUsers(self):
         """
