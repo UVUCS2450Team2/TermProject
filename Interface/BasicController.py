@@ -23,11 +23,9 @@ class BasicControlller(ApplicationInterface):
         """
             This function takes care of the verify login request that is initated by the user via the GUI button. It returns a boolean value
         """
-        if self.Backend.VerifyLogin(user, password):
-            self.Backend.SetActiveUser(user)
-            return True
-            
-        return False
+        
+        
+        return self.Backend.Login_User(user, password)
         
 
     def request_employees(self):

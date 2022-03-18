@@ -49,9 +49,18 @@ from collections import *
 
 from BackEnd import *
 
+"""PRODUCTION IMPORTS!"""
 from BackEnd.empClass import *
 
 from BackEnd.User import *
+"""COMMENT OUT WHEN USING DEBUG!"""
+
+"""DEBUG IMPORTS!"""
+#from User import *
+#from empClass import *
+"""COMMENT OUT WHEN USING PRODUCTION!"""
+
+
 
 import sys
 import os
@@ -68,35 +77,38 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 class BackendImplementation:
-    def __init__(self):
+    def __init__(self, empfile = "BackEnd/employees.csv", userfile = "BackEnd/userlogin.csv", timefile = "Backend/timecards.csv", receiptfile = "Backend/receipts.csv", payrollfile = "Backend/Payroll.csv"):
         self.EMP_DATA = []
         self.EMP_DICT = OrderedDict({})
         self.EMPfile = 0
-        self.EMPFilename = resource_path("BackEnd/employees.csv")
+        self.EMPFilename = empfile
 
         self.USER_DICT = OrderedDict({})
         self.USERfile = 0
-        self.USERFilename = resource_path("BackEnd/userlogin.csv")
+        self.USERFilename = userfile
 
         self.TimeCard_DICT = OrderedDict({})
-        self.TimeCardFilename = resource_path("Backend/timecards.csv")
+        self.TimeCardFilename = timefile
         self.TimeCardfile = 0
 
         self.Reciepts_DICT = OrderedDict({})
-        self.RecieptsFilename = resource_path("Backend/reciepts.csv")
+        self.RecieptsFilename = receiptfile
         self.Recieptsfile = 0
 
-        self.PayrollFilename = resource_path("Backend/Payroll.csv")
+        self.PayrollFilename = payrollfile
         self.PayrollFile = 0
 
 
         self.ActiveUser = None
+
+        safetyNET = True
 
         try:
             self.EMPfile = open(self.EMPFilename, 'r' )
             
         except:
             print("Error opening file.")
+            safetyNET = False
 
         try:
             self.USERfile = open(self.USERFilename, 'r' )
@@ -107,17 +119,29 @@ class BackendImplementation:
                 self.USERfile.write("admin,password,True,ADD,EDIT,DELETE")
             except:
                 print("Login file was not found and could not be created.")
+                safetyNET = False
         
         try:
             self.TimeCardfile = open(self.TimeCardFilename, 'r')
         except:
             print("Timecard file was not found!")
+            safetyNET = False
+        
+        try:
+            self.Recieptsfile = open(self.RecieptsFilename, 'r')
+        except:
+            print("Receipts file was not found!")
+            safetyNET = False
+        
+        if not safetyNET:
+            #need to throw errors at the user to let them know?
+            sys.exit()
 
      
         self.Read_LoginData()
         self.Read_EmployeeData()
         self.read_Timecards()
-        self.generatePayroll()
+        
         
 
     def Read_LoginData(self):
@@ -136,13 +160,19 @@ class BackendImplementation:
             else:
                 self.USER_DICT[words[0]] = User(words[0], words[1], words[3:])
 
-    
+    def Login_User(self, user, password):
+        if self.VerifyLogin(user,password):
+            self.SetActiveUser(user)
+            return True
+        
+        return False
+
     def Read_EmployeeData(self):
         """
         Reads the employee.csv file and parses the information into the empClass data structure array
         """ 
    
-
+        self.EMPfile = open(self.EMPFilename, 'r' )
         lines = self.EMPfile.readlines()
 
 
@@ -199,7 +229,9 @@ class BackendImplementation:
                         emp.make_commissioned(float(words[9], float(words[11])))
             """       
 
-            self.EMP_DICT[int(words[0])] = emp
+            #self.EMP_DICT[int(words[0])] = emp
+
+            self.AddEmployee(emp)
 
             
         return
@@ -315,7 +347,7 @@ class BackendImplementation:
         """
             Set the user as the active user. This if for permissions to function.
         """
-        self.SetActiveUser = self.USER_DICT[user]
+        self.ActiveUser = self.USER_DICT[user]
 
 
     def AddEmployee(self, emp):
@@ -334,6 +366,9 @@ class BackendImplementation:
             Replace employee data in the data structure array based on ID. Requires that a new emp data be sent to function
         """
         if emp == None:
+            return False
+
+        if not self.VerifyEmployeeInformation(emp):
             return False
         
         self.EMP_DICT[empID] = emp
@@ -384,6 +419,9 @@ class BackendImplementation:
             fullname = emp.f_name + " " + emp.l_name
 
             self.EMPfile.write(str(emp.emp_id) + "," + fullname + "," +  emp.address + "," + emp.city + "," + emp.state + "," + str(emp.zipcode) + "," + str(emp.Class) + "," + str(emp.paymethod) + "," + str(emp.salary) + "," + str(emp.hourly) + "," + str(emp.commission) + "," + emp.RoutingNumber + "," + emp.AccountNumber +'\n')
+        
+        self.EMPfile.close()
+        
    
     def SaveUsers(self):
         """
@@ -412,12 +450,12 @@ class BackendImplementation:
             self.EMP_DICT[emp].Dump()
     
     def VerifyEmployeeInformation(self, emp):
-        if not str(emp.emp_id).is_numeric():
+        if not str(emp.emp_id).isnumeric():
             return False
-        if not str(emp.zipcode).is_numeric():
+        if not str(emp.zipcode).isnumeric():
             return False
         try:
-            emp.Classification.asString()
+            emp.classification.asString()
         except:
             return False
         
@@ -436,11 +474,114 @@ class BackendImplementation:
             return self.ActiveUser.isAdmin
 
 def main():
-    test = BackendImplementation()
-    test.DumpEmployees()
-    test.DumpUsers()
-    test.SaveEmployees()
-    test.SaveUsers()
+        """
+            This function is the Unit Testing for BackEnd. Should only be called when attempting to run BackEnd.py on its own.
+            Goes through all the functions of the class and ensures the results are not only predictable, but correct
+        """
+        
+        print()
+        print("---------------Backend UnitTesting------------------")
+        test = BackendImplementation("BackEnd/UnitTest/empTest.csv", "BackEnd/UnitTest/userTest.csv", "BackEnd/UnitTest/timeTest.csv", "BackEnd/UnitTest/receiptTest.csv", "BackEnd/UnitTest/Payroll.csv")
+        print()
+        
+        try:
+            """ Testing User Login Reading Correctness """
+            print("--------Testing User Login Reading Correctness-------")
+        
+            assert len(test.USER_DICT) == 4, "User Dictionary is missing records! Check Read_LoginData!"
+            assert "admin" in test.USER_DICT, "User Dictionary is missing records! Check Read_LoginData!"
+            admin = test.USER_DICT['admin']
+            assert admin.username == "admin", "User 1 was not read correctly!"
+            assert admin.password == "password", "User 1 was not read correctly!"
+            assert admin.Admin == True, "User 1 was not read correctly!"
+            print("Login Reading Testing Passed.")
+       
+
+            print()
+            """ Testing User Login Functionality"""
+            print("--------Testing User Login Functionality--------")
+        
+            assert test.Login_User("dummy", "no") == False, "User : dummy, Password : no should have failed! Check Login_User" 
+            assert test.Login_User("admin", "password") == True, "User : admin, Password : password should have passed! Check Login_User"
+            print("Login Testing Passed.")
+        
+        
+            print()
+            """ Testing Employee File Reading Correctness"""
+            print("---------Testing Employee File Reading Correctness--------")
+        
+            assert len(test.EMP_DICT) == 3, "Employee Dictionary is missing records! Check Read_EmployeeData!"
+            emp = test.EMP_DICT[int(1)]
+            assert emp.f_name == "Haley", "Employee 1 First Name was not read correctly! Check Read_EmployeeData!"
+            assert emp.l_name == "Dickson", "Employee 1 Last Name was not read correctly! Check Read_EmployeeData!"
+            assert emp.address == "652 W 1428 S", "Employee 1 Address was not read correctly! Check Read_EmployeeData!"
+            assert emp.city == "Orem", "Employee 1 City was not read correctly! Check Read_EmployeeData!"
+            assert emp.state == "UT", "Employee 1 State was not read correctly! Check Read_EmployeeData!"
+            assert emp.zipcode == 84058, "Employee 1 State was not read correctly! Check Read_EmployeeData!"
+            assert emp.classification.asString() == "Hourly", "Employee 1 Class was not read correctly! Check Read_EmployeeData!"
+            assert emp.RoutingNumber == "WELLSFARGO5", "Employee 1 Class was not read correctly! Check Read_EmployeeData!"
+            assert emp.AccountNumber == "4567890000", "Employee 1 Class was not read correctly! Check Read_EmployeeData!"
+                
+            print("Employee Reading Test Passed.")
+      
+
+            print()
+            """ Testing Permissions and Employee Dictionary Actions """
+            print("----------Testing Permissions and Employee Dictionary Actions---------")
+       
+            assert test.Login_User("admin", "password") == True, "Login failed! Check Login_User!"
+            assert test.VerifyPermission("DELETE") == True, "Permission failed when it should have passed! Check VerifyPermission!"
+            assert test.VerifyPermission("ADD") == True, "Permission failed when it should have passed! Check VerifyPermission!"
+            assert test.VerifyPermission("EDIT") == True, "Permission failed when it should have passed! Check VerifyPermission!"
+            assert test.AddEmployee(Employee(99, "Test", "Testingson", "Testing Lane 123", "Exam", "TS", 12345, "TESTROUTE9", "TESTBANK", 50.0, 50000, 5.0, 1, 1)) == True, "Failed to add an employee! Check VerifyPermissions!"
+            assert (99 in test.EMP_DICT) == True, "Failed to add employee! Check AddEmployee!"
+            assert len(test.EMP_DICT) == 4, "Failed to add employee! Check AddEmployee!"
+
+            assert test.RemoveEmployee(99) == True, "Failed to delete employee! Check RemoveEmployee!"
+            assert len(test.EMP_DICT) == 3, "Failed to delete employee! Check RemoveEmployee!"
+            assert (not 99 in test.EMP_DICT) == True, "Failed to delete employee! Check RemoveEmployee!"
+
+            assert test.UpdateEmployee(99, Employee()) == False, "Failed to delete employee! Check RemoveEmployee!"
+            assert test.UpdateEmployee(1, Employee(99, "Test", "Testingson", "Testing Lane 123", "Exam", "TS", 12345, "TESTROUTE9", "TESTBANK", 50.0, 50000, 5.0, 1, 1)) == True, "Failed to Update an employee! Check UpdateEmployee!"
+            emp = test.EMP_DICT[int(1)]
+            assert emp.f_name == "Test", "Failed to Update an employee! Check UpdateEmployee!"
+
+            print("Testing Permissions and Employee Actions Passed.")
+
+            print()
+            print("---------Testing Employee Change Permanence")
+            test.Read_EmployeeData()
+            OriginalList = test.getEmployeesAsList()
+
+            test.AddEmployee(Employee(99, "Test", "Testingson", "Testing Lane 123", "Exam", "TS", 12345, "TESTROUTE9", "TESTBANK", 50.0, 50000, 5.0, 1, 1))
+
+            test.SaveEmployees()
+            test.Read_EmployeeData()
+
+            assert len(test.EMP_DICT) == 4, "Failed to maintain Employee File changes! Check SaveEmployees!"
+            assert (99 in test.EMP_DICT) == True, "Failed to maintain Employee File Changes! Check SaveEmployees!"
+            
+            test.RemoveEmployee(99)
+            test.SaveEmployees()
+            test.Read_EmployeeData()
+
+            assert len(test.EMP_DICT) == 3, "Failed to maintain Employee File Changes! Check Save Employees!"
+            assert (not 99 in test.EMP_DICT) == True, "Failed to maintain Employee File Changes! Check Save Employees!"
+
+            print("Testing Employee Permanence Passed.")
+
+
+
+        except AssertionError as error:
+            print(error)
+        
+        print()
+        print("All Testing Passed!")
+        print()
+        #try:
+        #    assert(test.EMP_DICT["1"])
+        
+        
    
     
 
