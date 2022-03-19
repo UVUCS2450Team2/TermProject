@@ -1,1 +1,2 @@
 admin,password,True,ADD,EDIT,DELETE
+user1,password,False,EDIT
