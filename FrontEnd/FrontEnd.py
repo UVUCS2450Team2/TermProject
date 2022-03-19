@@ -61,6 +61,7 @@ class Window:
         self.Controller = Interface.BasicController.BasicControlller()
         # This section creates the basic window with a light gray background
         self.root = tk.Tk() ## Create the root window
+        self.root.protocol("WM_DELETE_WINDOW", self.exit)   #Calls self.exit() when the root window is closed
         self.root.bind_all('<F4>', self.change_colors)
         self.width = 1000   ## Define the root window's dimensions
         self.height = 600
@@ -295,6 +296,7 @@ class Window:
         """
         Ends the program
         """
+        self.Controller.on_exit()
         self.root.destroy()      # When the user closes the program destroy the root window
     
     def login(self, event=None):
