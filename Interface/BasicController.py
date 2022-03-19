@@ -77,4 +77,6 @@ class BasicControlller(ApplicationInterface):
         """
         return self.Backend.is_admin()
 
+    def on_exit(self):
+        return
 
