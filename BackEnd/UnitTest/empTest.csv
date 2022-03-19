@@ -1,0 +1,4 @@
+ID,Name,Address,City,State,Zip,Classification,PayMethod,Salary,Hourly,Commission,Route,Account
+1,Haley Dickson,652 W 1428 S,Orem,UT,84058,1,1,45000,30.0,23.0,WELLSFARGO5,4567890000
+2,Francisco Allen,678 E 1500 S,Orem,UT,84059,2,1,45000,30.0,23.3,WELLSFARGO5,6675333290
+3,TaShya Randall,666 W 999 S,Orem,UT,9999,3,1,45000,30.0,23.3,WELLSFARGO5,66666666666

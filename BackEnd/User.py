@@ -22,6 +22,7 @@ class User:
         self.username = username
         self.password = password
         self.Permissions = actions
+        self.Admin      = False
     
     def isActionAllowed(self, action):
         res = [x for x in self.Permissions if action in x]
@@ -32,3 +33,9 @@ class User:
         print(self.username, self.password)
         print(self.Permissions)
         print()
+
+
+class Admin(User):
+    def __init__(self,username, password, actions):
+        User.__init__(self,username,password, actions)
+        self.Admin = True
