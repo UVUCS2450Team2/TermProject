@@ -128,8 +128,6 @@ class Window:
             self.corner4_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
             self.corner4_container = tk.Label(self.login_screen.right_frame, image=self.corner4_image, bg=bg_color, bd=0)   ### Rotate and place corner4
             self.corner4_container.pack(side="bottom", anchor="se")
-
-        self.login_screen.show()    ## show the login screen frame
         
         # Create the workflow screen
         self.work_screen = TabFrame(self.main_frame, 2) # Create x tabs in the tabs frame
@@ -234,9 +232,6 @@ class Window:
         self.emp_payment_type_optionlist = tk.OptionMenu(self.emp_payment_label_container, self.emp_payment, *self.payment_types)
         self.emp_payment_type_optionlist.pack(side="left", fill="x")
         self.emp_payment_type_optionlist.bind("<Return>", self.update_working_employee)
-        #self.emp_payment_entry = tk.Entry(self.emp_payment_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_payment, width=self.entry_length, fg='black')
-        #self.emp_payment_entry.pack(side="left", fill="x")
-        #self.emp_payment_entry.bind("<Return>", self.update_working_employee)
 
         self.emp_salary = tk.StringVar()
         self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
@@ -258,7 +253,11 @@ class Window:
         self.emp_address_entry.pack(side="left", fill="x")
         self.emp_address_entry.bind("<Return>", self.update_working_employee)
         
-        self.work_screen.hide()     #### Hide the tab since it is not the first tab
+        #Set the show/hide for each screen for the intial view when the application is launched
+        #self.login_screen.hide()
+        #self.work_screen.show()
+        self.login_screen.show()
+        self.work_screen.hide()
 
         #Hide various widgets based on user permissions
         #if not self.Controller.isAdmin(user):
@@ -290,7 +289,7 @@ class Window:
         self.full_list = self.request_employees()
         self.visible_list = self.request_employees()    # Update the visible list of employees
         self.emp_search_field.delete(0, tk.END)
-        self.update_search_listbox()
+        self.update_search_listbox() 
 
     def run(self):
         """
