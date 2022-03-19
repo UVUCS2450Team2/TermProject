@@ -56,13 +56,14 @@ class Window:
             'purple',
             'red',
             'orange',
-            'green'            
+            'green'
         ]
         self.Controller = Interface.BasicController.BasicControlller()
         # This section creates the basic window with a light gray background
         self.root = tk.Tk() ## Create the root window
         self.root.protocol("WM_DELETE_WINDOW", self.exit)   #Calls self.exit() when the root window is closed
         self.root.bind_all('<F4>', self.change_colors)
+        self.root.resizable(width=False, height=False)
         self.width = 1000   ## Define the root window's dimensions
         self.height = 600
         self.root.geometry("{}x{}+{}+{}".format(self.width, self.height,
@@ -75,6 +76,8 @@ class Window:
         self.root.iconphoto(False, self.icon_image_small)
         self.root.wm_minsize(self.width, self.height)       ## Limit the window so that it cannot be made smaller than its original size
         self.color_index = 0
+        self.last_selected = -1
+        self.confirm_result = False
         
         # This section creates the white frame that goes on top of the light gray background
         self.main_frame = tk.Frame(self.root, bg=bg_color)  ## Create the main frame on the root
@@ -130,7 +133,7 @@ class Window:
         
         # Create the workflow screen
         self.work_screen = TabFrame(self.main_frame, 2) # Create x tabs in the tabs frame
-        
+
         ## Create elements in tab 1, this will be the open tab upon logging in
         self.work_screen.tabs[0].tab_button.configure(text = "Records")
         self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)    ### Configure the Records tab name and attributes
@@ -165,9 +168,8 @@ class Window:
         self.work_screen.tabs[1].hide_body()    ### Hide the employees tab because the default tab is the first tab
         
         ### Tab 2 Left
-        self.last_selected = -1
         self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2) #### Create a listbox frame on the left frame of the employees tab
-        self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,10))
+        self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,25))
         self.listbox_frame.pack_propagate(0)
         self.emp_search_field = tk.Entry(self.listbox_frame, bd=0, bg=bg_color, font=basic_font, fg='black')    #### Create a search field and attach it to the listbox
         self.emp_search_field.bind("<KeyRelease>", self.search_keyrelease) # Create event listenter for the search field
@@ -221,7 +223,7 @@ class Window:
         self.emp_name_entry.pack(side="left", fill="x")
         self.emp_name_entry.bind("<Return>", self.update_working_employee)
 
-        self.selected_emp_info = ""
+        self.last_selected_emp_info = ""
         self.emp_payment = tk.StringVar()
         self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_payment_label_container.pack(pady=5, fill="x")
@@ -257,6 +259,11 @@ class Window:
         self.emp_address_entry.bind("<Return>", self.update_working_employee)
         
         self.work_screen.hide()     #### Hide the tab since it is not the first tab
+
+        #Hide various widgets based on user permissions
+        #if not self.Controller.isAdmin(user):
+        #self.manage_emp_frame.pack_forget()
+
     
     def add(self):
         """
@@ -329,10 +336,17 @@ class Window:
         name = data.split()
         self.current_working_employee = next(employee for employee in self.Controller.request_employees() if ((employee.f_name == name[0]) and (employee.l_name == name[1])))
         if selection:
+
             if index != self.last_selected:   # If a different employee is being selected
 
-                if self.selected_emp_info != self.get_emp_entry_info() and self.last_selected != -1:   # If changes were made in the entry fields
-                    confirm = Confirmation(self.root, "Save changes to this employee?", self.colors[self.color_index])
+                #if self.Controller.isAdmin(user):
+                selected_emp_info = self.get_emp_entry_info()
+                if self.last_selected_emp_info != selected_emp_info and self.last_selected != -1:   # If changes were made in the entry fields
+                    self.confirm_result = False
+                    Confirmation(self.root, self, "Save changes to this employee?", self.colors[self.color_index])   # Confirm changes
+                    if self.confirm_result:
+                        #self.Controller.update_employee(selected_emp_info)
+                        pass
 
                 self.emp_name_entry.delete(0, last="end")
                 self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab
@@ -357,14 +371,16 @@ class Window:
                 self.emp_address_entry.delete(0, tk.END)
                 self.emp_address_string = self.current_working_employee.address
                 self.emp_address_entry.insert(0, self.emp_address_string)
-                self.selected_emp_info = self.get_emp_entry_info()
+                self.last_selected_emp_info = self.get_emp_entry_info()
                 self.last_selected = self.emp_box.curselection()[0]
 
         else:
             self.emp_name_label.configure(text="")
 
     def get_emp_entry_info(self):
-        '''Return all the information in the right side entry fields as a string'''
+        """
+        Return all the information in the right side entry fields as a string
+        """
         string = ""
         string += self.emp_name_entry.get() + ","
         string += self.emp_payment.get() + ","
@@ -389,7 +405,6 @@ class Window:
         names = []
         for employee in emplist:
             names.append(employee.f_name+" "+employee.l_name)   # Get all the names from the employee list
-
         return names
 
     def update_working_employee(self, event):
@@ -615,6 +630,7 @@ class Popup(tk.Toplevel):
         tk.Toplevel.__init__(self, master)
         self.transient(master)   # Set the popup to be on top of the main window
         self.grab_set()   # Ignore clicks in the main window while the popup is open
+        self.protocol("WM_DELETE_WINDOW", self.close)   # Call self.close when the exit button is clicked
         self.width = 350   # Set popup dimensions and show in the center of the screen
         self.height = 100
         self.geometry("{}x{}+{}+{}".format(self.width, self.height,
@@ -666,16 +682,17 @@ class Confirmation(Popup):
     """
     This class creates a confirmation popup with two option, yes or no
     """
-    def __init__(self, master, message, color):
+    def __init__(self, master, the_window, message, color):
         """
         Initialize and show the confirmation popup
-        """        
+        """
         super().__init__(master, message)
+        self.the_window = the_window
         self.yes_button = tk.Button(self.main_frame, text="Yes", bg=color, bd=0,
-                                        foreground=bg_color, font=basic_font, command=self.yes, fg='black') # A button to confirm the action
+                                    foreground=bg_color, font=basic_font, command=self.yes, fg='black') # A button to confirm the action
         self.yes_button.pack(side="left", padx=(90, 5), pady=5)
         self.no_button = tk.Button(self.main_frame, text="No", bg=color, bd=0,
-                                        foreground=bg_color, font=basic_font, command=self.no, fg='black') # A button to decline the action
+                                    foreground=bg_color, font=basic_font, command=self.no, fg='black') # A button to decline the action
         self.no_button.pack(side="right", padx=(5, 90), pady=5)
         self.wait()
 
@@ -683,12 +700,14 @@ class Confirmation(Popup):
         """
         Commands to execute if the confirmation is positive
         """
+        self.the_window.confirm_result = True
         self.close()    # Close the popup
     
     def no(self):
         """
         Commands to execute if the confirmation is negative
         """
+        self.the_window.confirm_result = False
         self.close()    # Close the popup
 
 def isfloat(num):
