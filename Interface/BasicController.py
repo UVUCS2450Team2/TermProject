@@ -72,4 +72,6 @@ class BasicControlller(ApplicationInterface):
         """
         return self.Backend.VerifyPermission(action)
 
+    def on_exit(self):
+        return
 

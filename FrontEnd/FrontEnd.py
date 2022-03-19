@@ -138,13 +138,13 @@ class Window:
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
         self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
-                                        command=lambda: Notice(self, "Under Development.", self.colors[self.color_index]))
+                                        command=lambda: Notice(self.root, "Under Development.", self.colors[self.color_index]))
         self.payroll_button.pack(padx=100, pady=(50, 10))
         self.payroll_button.pack_propagate(0)
         self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
         self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
-                                        command=lambda: Notice(self, "Under Development.", self.colors[self.color_index]))
+                                        command=lambda: Notice(self.root, "Under Development.", self.colors[self.color_index]))
         self.user_guide_button.pack(padx=100, pady=(10, 55))
         self.user_guide_button.pack_propagate(0)
 
@@ -165,6 +165,7 @@ class Window:
         self.work_screen.tabs[1].hide_body()    ### Hide the employees tab because the default tab is the first tab
         
         ### Tab 2 Left
+        self.last_selected = -1
         self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2) #### Create a listbox frame on the left frame of the employees tab
         self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,10))
         self.listbox_frame.pack_propagate(0)
@@ -191,9 +192,6 @@ class Window:
                                         font=title_font, bd=0, command=self.add)  #### Create Add button on employee management frame
         self.emp_add_btn.pack(side='left', padx=0)
         self.emp_add_btn.pack_propagate(0)
-        #self.emp_edit_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, text=" Edit ",
-        #                                font=title_font, bd=0, command=lambda: Notice(self, "Under Development."))  #### Create Edit button on employee management frame
-        #self.emp_edit_btn.pack(side='left', expand=True, fill='both', padx=10)
         self.delete_button_image = ImageTk.PhotoImage(Image.open(delete_button_path).resize((225, 50)))
         self.emp_delete_btn = tk.Button(self.manage_emp_frame, bg=skyblue, foreground=bg_color, image=self.delete_button_image, width=223, height=48,
                                             font=title_font, bd=0, command=self.delete)  #### Create Delete button on employee management frame
@@ -223,6 +221,7 @@ class Window:
         self.emp_name_entry.pack(side="left", fill="x")
         self.emp_name_entry.bind("<Return>", self.update_working_employee)
 
+        self.selected_emp_info = ""
         self.emp_payment = tk.StringVar()
         self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
         self.emp_payment_label_container.pack(pady=5, fill="x")
@@ -296,7 +295,7 @@ class Window:
         """
         Ends the program
         """
-        self.Controller.on_exit()
+        self.Controller.on_exit()   # Let the controller know the GUI is about to be closed, save anything necessary
         self.root.destroy()      # When the user closes the program destroy the root window
     
     def login(self, event=None):
@@ -307,7 +306,7 @@ class Window:
             self.login_screen.hide()    # Hide the login page
             self.work_screen.show()     # Show the work screen
         else:
-            popup = Notice(self, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
+            popup = Notice(self.root, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
     
     def search_keyrelease(self, event):
         """
@@ -330,32 +329,49 @@ class Window:
         name = data.split()
         self.current_working_employee = next(employee for employee in self.Controller.request_employees() if ((employee.f_name == name[0]) and (employee.l_name == name[1])))
         if selection:
-            self.emp_name_entry.delete(0, last="end")
-            self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab
+            if index != self.last_selected:   # If a different employee is being selected
 
-            #self.emp_payment_entry.delete(0, tk.END)
-            self.emp_classification = self.current_working_employee.classification
-            if isinstance(self.emp_classification, Hourly): self.emp_classification = "Hourly"
-            elif isinstance(self.emp_classification, Salaried): self.emp_classification = "Salaried"
-            elif isinstance(self.emp_classification, Commissioned): self.emp_classification = "Commissioned"
-            else: self.emp_classification = "Unknown"
-            self.emp_payment.set(self.emp_classification)
-            #self.emp_payment_entry.insert(0, self.emp_classification)
+                if self.selected_emp_info != self.get_emp_entry_info() and self.last_selected != -1:   # If changes were made in the entry fields
+                    confirm = Confirmation(self.root, "Save changes to this employee?", self.colors[self.color_index])
 
-            self.emp_salary_entry.delete(0, tk.END)
-            self.emp_pay_amount = ""
-            if (self.emp_classification == "Hourly"): self.emp_pay_amount = self.current_working_employee.hourly
-            elif (self.emp_classification == "Salaried"): self.emp_pay_amount = self.current_working_employee.salary
-            elif (self.emp_classification == "Commissioned"): self.emp_pay_amount = self.current_working_employee.commission
-            else: self.emp_pay_amount = "Unknown"
-            self.emp_salary_entry.insert(0, self.emp_pay_amount)
+                self.emp_name_entry.delete(0, last="end")
+                self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab
 
-            self.emp_address_entry.delete(0, tk.END)
-            self.emp_address_string = self.current_working_employee.address
-            self.emp_address_entry.insert(0, self.emp_address_string)
+                #self.emp_payment_entry.delete(0, tk.END)
+                self.emp_classification = self.current_working_employee.classification
+                if isinstance(self.emp_classification, Hourly): self.emp_classification = "Hourly"
+                elif isinstance(self.emp_classification, Salaried): self.emp_classification = "Salaried"
+                elif isinstance(self.emp_classification, Commissioned): self.emp_classification = "Commissioned"
+                else: self.emp_classification = "Unknown"
+                self.emp_payment.set(self.emp_classification)
+                #self.emp_payment_entry.insert(0, self.emp_classification)
+
+                self.emp_salary_entry.delete(0, tk.END)
+                self.emp_pay_amount = ""
+                if (self.emp_classification == "Hourly"): self.emp_pay_amount = self.current_working_employee.hourly
+                elif (self.emp_classification == "Salaried"): self.emp_pay_amount = self.current_working_employee.salary
+                elif (self.emp_classification == "Commissioned"): self.emp_pay_amount = self.current_working_employee.commission
+                else: self.emp_pay_amount = "Unknown"
+                self.emp_salary_entry.insert(0, self.emp_pay_amount)
+
+                self.emp_address_entry.delete(0, tk.END)
+                self.emp_address_string = self.current_working_employee.address
+                self.emp_address_entry.insert(0, self.emp_address_string)
+                self.selected_emp_info = self.get_emp_entry_info()
+                self.last_selected = self.emp_box.curselection()[0]
+
         else:
             self.emp_name_label.configure(text="")
 
+    def get_emp_entry_info(self):
+        '''Return all the information in the right side entry fields as a string'''
+        string = ""
+        string += self.emp_name_entry.get() + ","
+        string += self.emp_payment.get() + ","
+        string += self.emp_salary_entry.get() + ","
+        string += self.emp_address_entry.get()
+        return string
+    
     def update_search_listbox(self):
         """
         Updates the listbox to show only employess who are in the visible list
@@ -365,11 +381,10 @@ class Window:
             self.emp_box.insert(0, i) # Insert employee name into listbox
             self.emp_box.itemconfig(0, {'bg':'white'}) # Edit background color
 
-    def request_employees(self) :
+    def request_employees(self):
         """
         Gets a list of all the names of the employees in the database
         """ 
-        #return sorted(["Alex", "Elliot", "Shayne", "Michael", "Kaleb", "Sam"] *5, reverse=True)
         emplist = self.Controller.request_employees()   # Request the employee list from the backend
         names = []
         for employee in emplist:
@@ -385,7 +400,7 @@ class Window:
         new_payment_type = self.emp_payment.get().lower()
         new_payment_amount = self.emp_salary.get()
         if not (new_payment_amount.isnumeric() or isfloat(new_payment_amount)):
-            Notice(self, "Payment amount must be a number", self.colors[self.color_index])
+            Notice(self.root, "Payment amount must be a number", self.colors[self.color_index])
             return
         new_address = self.emp_address.get()
 
@@ -588,7 +603,7 @@ class Tab(Widget):
         self.tab_button.configure(bg=bg_color2, activebackground=bg_color2)
 
 
-class Popup:
+class Popup(tk.Toplevel):
     """
     This class creates and controls popup messages in the program
     """
@@ -596,31 +611,40 @@ class Popup:
         """
         Initialize and display the popup
         """
-        self.popup = tk.Toplevel(master.root) # Create the popup as a child of the root tk application
-        self.popup.width = 350 # Set popup dimensions and show in the center of the screen
-        self.popup.height = 100
-        self.popup.geometry("{}x{}+{}+{}".format(self.popup.width, self.popup.height,
-                                                int(master.root.winfo_screenwidth()/2 - self.popup.width/2),
-                                                int(master.root.winfo_screenheight()/2 - self.popup.height/2)))
-        self.popup.resizable(width=False, height=False) # Disable resizing
-        self.popup.configure(bg=bg_color2) # Set visiual appearance of the popup
-        self.popup.title("EmpDat")
-        self.popup.icon_image = tk.PhotoImage(file = logo_small_path)
-        self.popup.iconphoto(False, self.popup.icon_image)
+        self.master = master
+        tk.Toplevel.__init__(self, master)
+        self.transient(master)   # Set the popup to be on top of the main window
+        self.grab_set()   # Ignore clicks in the main window while the popup is open
+        self.width = 350   # Set popup dimensions and show in the center of the screen
+        self.height = 100
+        self.geometry("{}x{}+{}+{}".format(self.width, self.height,
+                                            int(master.winfo_screenwidth()/2 - self.width/2),
+                                            int(master.winfo_screenheight()/2 - self.height/2)))
+        self.resizable(width=False, height=False) # Disable resizing
+        self.configure(bg=bg_color2) # Set visiual appearance of the popup
+        self.title("EmpDat")
+        self.icon_image = tk.PhotoImage(file = logo_small_path)
+        self.iconphoto(False, self.icon_image)
         
-        self.popup.main_frame = tk.Frame(self.popup, bg=bg_color) # A frame where the window context is shown
-        self.popup.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
-        self.popup.main_frame.pack_propagate(0)
+        self.main_frame = tk.Frame(self, bg=bg_color) # A frame where the window context is shown
+        self.main_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        self.main_frame.pack_propagate(0)
         
-        self.popup.message_label = tk.Label(self.popup.main_frame, text=message, bg=bg_color, font=basic_font, fg='black') # Display a message
-        self.popup.message_label.pack(side="top", pady=(5, 0))
-        self.popup.message_label.pack_propagate(0)
-        
+        self.message_label = tk.Label(self.main_frame, text=message, bg=bg_color, font=basic_font, fg='black') # Display a message
+        self.message_label.pack(side="top", pady=(5, 0))
+        self.message_label.pack_propagate(0)
+    
+    def wait(self):
+        """
+        Pause main window until the popup is
+        """
+        self.master.wait_window(self)
+    
     def close(self):
         """
         Close the popup
         """
-        self.popup.destroy()
+        self.destroy()
 
 
 class Notice(Popup):
@@ -631,27 +655,29 @@ class Notice(Popup):
         """
         Initialize and show the notice popup
         """
-        super().__init__(master, message)  # Run super init
-        self.popup.okay_button = tk.Button(self.popup.main_frame, text="Okay", bg=color, bd=0,
-                                      foreground=color, font=basic_font, command=self.close, fg='black') # A button to close the notice
-        self.popup.okay_button.pack(side="bottom", pady=5)
+        super().__init__(master, message)
+        self.okay_button = tk.Button(self.main_frame, text="Okay", bg=color, bd=0,
+                                    foreground=bg_color, font=basic_font, command=self.close, fg='black') # A button to close the notice
+        self.okay_button.pack(side="bottom", pady=5)
+        self.wait()
 
 
 class Confirmation(Popup):
     """
     This class creates a confirmation popup with two option, yes or no
     """
-    def __init__(self, master, message):
+    def __init__(self, master, message, color):
         """
         Initialize and show the confirmation popup
-        """
-        super().__init__(master, message) # Run super init
-        self.popup.yes_button = tk.Button(self.popup.main_frame, text="Yes", bg=skyblue, bd=0,
-                                            foreground=bg_color, font=basic_font, command=self.yes, fg='black') # A button to confirm the action
-        self.popup.yes_button.pack(side="left", padx=(90, 5), pady=5)
-        self.popup.no_button = tk.Button(self.popup.main_frame, text="No", bg=skyblue, bd=0,
-                                            foreground=bg_color, font=basic_font, command=self.no, fg='black') # A button to decline the action
-        self.popup.no_button.pack(side="right", padx=(5, 90), pady=5)
+        """        
+        super().__init__(master, message)
+        self.yes_button = tk.Button(self.main_frame, text="Yes", bg=color, bd=0,
+                                        foreground=bg_color, font=basic_font, command=self.yes, fg='black') # A button to confirm the action
+        self.yes_button.pack(side="left", padx=(90, 5), pady=5)
+        self.no_button = tk.Button(self.main_frame, text="No", bg=color, bd=0,
+                                        foreground=bg_color, font=basic_font, command=self.no, fg='black') # A button to decline the action
+        self.no_button.pack(side="right", padx=(5, 90), pady=5)
+        self.wait()
 
     def yes(self):
         """
