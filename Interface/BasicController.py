@@ -23,11 +23,9 @@ class BasicControlller(ApplicationInterface):
         """
             This function takes care of the verify login request that is initated by the user via the GUI button. It returns a boolean value
         """
-        if self.Backend.VerifyLogin(user, password):
-            self.Backend.SetActiveUser(user)
-            return True
-            
-        return False
+        
+        
+        return self.Backend.Login_User(user, password)
         
 
     def request_employees(self):
@@ -42,13 +40,13 @@ class BasicControlller(ApplicationInterface):
         """
             This function creates an exported CSV file of the employees payroll. Returns boolean for success
         """
-        pass
+        self.Backend.generatePayroll()
 
     def add_employee(self, emp):
         """
             This function takes as parameters an employee object and adds its to the database in the backend
         """
-        self.Backend.AddEmployee(emp)
+        return self.Backend.AddEmployee(emp)
 
     def update_employee(self, empID, emp):
         """
@@ -71,6 +69,13 @@ class BasicControlller(ApplicationInterface):
             These actions have a string name and must be used uniformly.
         """
         return self.Backend.VerifyPermission(action)
+    
+
+    def is_admin(self):
+        """
+            This function asks the backend if the current logged in user is an admin, this is used to verify rights and show particular views
+        """
+        return self.Backend.is_admin()
 
     def on_exit(self):
         return

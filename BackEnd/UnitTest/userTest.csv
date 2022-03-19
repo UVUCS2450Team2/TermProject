@@ -1,0 +1,4 @@
+admin,password,True,ADD,EDIT,DELETE
+bob,password,False,EDIT
+derick,password,False,DELETE
+Dan,password,False,ADD

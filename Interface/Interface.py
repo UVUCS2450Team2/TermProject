@@ -56,9 +56,17 @@ class ApplicationInterface:
             This function takes as a parameter the employee ID that needs to be removed from records. 
             Returns a boolean value if operation was successful
         """
+        pass
     
     def verify_permission(self, action):
         """
             This function calls a black box in the backend to verify whether the user is allowed to do the action that is being requested.
             These actions have a string name and must be used uniformly.
         """
+        pass
+    
+    def is_admin(self):
+        """
+            This function asks the backend if the current logged in user is an admin, this is used to verify rights and show particular views
+        """
+        pass

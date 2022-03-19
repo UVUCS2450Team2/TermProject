@@ -21,10 +21,12 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
 if 'Darwin' in platform.system():
     folder_path = resource_path("FrontEnd/Assets_mac/")
 else:
     folder_path = resource_path("FrontEnd\\Assets\\")
+
 
 logo_large_path = folder_path+"logo_large.PNG"
 logo_small_path = folder_path+"logo_small.PNG"
