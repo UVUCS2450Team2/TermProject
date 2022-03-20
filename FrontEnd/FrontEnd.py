@@ -156,7 +156,7 @@ class Window:
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
         self.payroll_button = tk.Button(self.dashboard_buttons_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
-                                        command=lambda: Notice(self.root, "Under Development.", self.colors[self.color_index]))
+                                        command=self.payroll_button_click)
         self.payroll_button.pack(padx=100, pady=(50,20))
         self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
         self.user_guide_button = tk.Button(self.dashboard_buttons_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
@@ -827,6 +827,13 @@ class Window:
         for container in colored_image_containers:
             container.configure(bg=self.colors[self.color_index])
         self.emp_box.configure(selectbackground=self.colors[self.color_index])
+
+    def payroll_button_click(self):
+        """
+        When the payroll button is clicked, this function exports the users payroll to a csv file.
+        """
+        self.Controller.export_payroll()
+        Notice(self.root, "Payroll exported to csv file.", self.colors[self.color_index])
         
 
 class Widget(ABC):
