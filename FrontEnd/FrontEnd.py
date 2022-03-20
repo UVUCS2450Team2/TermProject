@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from BackEnd import empClass
 from BackEnd.empClass import Employee, Hourly, Salaried, Commissioned
 import Interface.BasicController
-import random, sys, os, platform
+import copy, random, sys, os, platform
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
