@@ -1,5 +1,5 @@
-import imp
 import tkinter as tk
+from turtle import width
 from PIL import Image, ImageTk
 from abc import ABC, abstractmethod
 from BackEnd import empClass
@@ -21,12 +21,10 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-
 if 'Darwin' in platform.system():
     folder_path = resource_path("FrontEnd/Assets_mac/")
 else:
     folder_path = resource_path("FrontEnd\\Assets\\")
-
 
 logo_large_path = folder_path+"logo_large.PNG"
 logo_small_path = folder_path+"logo_small.PNG"
@@ -37,6 +35,8 @@ user_guide_button_path = folder_path+"user_guide_button.PNG"
 corner_image_path = folder_path+"corner.PNG"
 add_button_path = folder_path+"add_button.PNG"
 delete_button_path = folder_path+"delete_button.PNG"
+confirm_button_path = folder_path+"confirm_button.PNG"
+cancel_button_path = folder_path+"cancel_button.PNG"
 bg_color  = "white"
 bg_color2 = "#D7D8D9"
 skyblue = "#3bc3f1"
@@ -61,6 +61,13 @@ class Window:
             'green'
         ]
         self.Controller = Interface.BasicController.BasicControlller()
+        self.color_index = 0
+        self.last_selected = -1
+        self.confirm_result = False
+        self.last_selected_emp_info = ""
+        self.full_list = self.request_employees()        #### Populate the listbox with the full list of employee initially
+        self.visible_list = self.request_employees()     #### Show the current requested employees
+        
         # This section creates the basic window with a light gray background
         self.root = tk.Tk() ## Create the root window
         self.root.protocol("WM_DELETE_WINDOW", self.exit)   #Calls self.exit() when the root window is closed
@@ -77,9 +84,6 @@ class Window:
         self.icon_image_small = tk.PhotoImage(file=logo_small_path)
         self.root.iconphoto(False, self.icon_image_small)
         self.root.wm_minsize(self.width, self.height)       ## Limit the window so that it cannot be made smaller than its original size
-        self.color_index = 0
-        self.last_selected = -1
-        self.confirm_result = False
         
         # This section creates the white frame that goes on top of the light gray background
         self.main_frame = tk.Frame(self.root, bg=bg_color)  ## Create the main frame on the root
@@ -91,21 +95,29 @@ class Window:
         self.login_frame = tk.Frame(self.login_screen.left_frame, bg=bg_color)  ## Create the left frame on the login screen frame
         self.login_frame.pack()
         self.login_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center the login frame on the left column
+        
+        ## Create the username label and button
         self.username = tk.StringVar()
-        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font, fg='black')     ## Create the username label and button
+        self.username_label = tk.Label(self.login_frame, text="Username", bg=bg_color, font=title_font, fg='black')
         self.username_label.pack()
-        self.username_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, textvariable=self.username, fg='black')
+        self.username_field = tk.Entry(self.login_frame, textvariable=self.username, 
+                                        bd=0, bg=bg_color2, font=basic_font, fg='black')
         self.username_field.pack()
+        
+        ## Create the password label and button
         self.password = tk.StringVar()
-        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font, fg='black')     ## Create the password label and button
+        self.password_label = tk.Label(self.login_frame, text="Password", bg=bg_color, font=title_font, fg='black')
         self.password_label.pack()
-        self.password_field = tk.Entry(self.login_frame, bd=0, bg=bg_color2, font=basic_font, show="*", textvariable=self.password, fg='black')
+        self.password_field = tk.Entry(self.login_frame, textvariable=self.password,
+                                        bd=0, bg=bg_color2, font=basic_font, show="*", fg='black')
         self.password_field.pack()
         self.password_field.bind("<Return>", self.login)
+        
         self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))     ## Load in the logo image
         self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=skyblue)     ## Create a logo container on the right frame of the two column frame
         self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         ## Create the login button from image resource
-        self.login_button = tk.Button(self.login_frame, image=self.login_button_pic, bg=skyblue, activebackground=bg_color, bd=0, command=self.login, width=223, height=38)
+        self.login_button = tk.Button(self.login_frame, image=self.login_button_pic, bg=skyblue, 
+                                        activebackground=bg_color, bd=0, command=self.login, width=223, height=38)
         self.login_button.pack(pady=10)
         self.login_button.pack_propagate(0)
         self.login_pic_container.pack()
@@ -160,8 +172,6 @@ class Window:
             self.corner6_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner6_image, bg=bg_color, bd=0)
             self.corner6_container.pack(side="right")
 
-        self.work_screen.tabs[0].show_body()    ### Show the tab 1 body
-        
         ## Create elements in tab 2
         self.work_screen.tabs[1].tab_button.configure(text = "Employees")                   ### Configure the Employees tab name and attributes
         self.work_screen.tabs[1].body_frame = TwoColumnFrame(self.work_screen.body_frame)   ### Create the employees page out of a two column frame 
@@ -186,7 +196,24 @@ class Window:
         self.emp_box.bind("<<ListboxSelect>>", self.listbox_select) # Create event listener for when an item in the listbox is selected
         self.emp_box.pack(fill="both", expand=True)
         self.emp_box.pack_propagate(0)
-        self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)    #### Create a new frame for add, edit, and delete buttons
+
+        ####Create frame for confirm or cancel (when adding new employee)
+        self.adding_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)
+        self.adding_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
+        self.adding_emp_frame.pack_propagate(0)
+        self.confirm_button_image = ImageTk.PhotoImage(Image.open(confirm_button_path).resize((225, 50)))
+        self.confirm_emp_btn = tk.Button(self.adding_emp_frame, bg=skyblue, foreground=bg_color, image=self.confirm_button_image, width=223, height=48,
+                                        font=title_font, bd=0, command=self.confirm_adding)  #### Create confirm button on employee adding frame
+        self.confirm_emp_btn.pack(side='left', padx=0)
+        self.confirm_emp_btn.pack_propagate(0)
+        self.cancel_button_image = ImageTk.PhotoImage(Image.open(cancel_button_path).resize((225, 50)))
+        self.cancel_emp_btn = tk.Button(self.adding_emp_frame, bg=skyblue, foreground=bg_color, image=self.cancel_button_image, width=223, height=48,
+                                            font=title_font, bd=0, command=self.cancel_adding)  #### Create cancel button on employee adding frame
+        self.cancel_emp_btn.pack(side='right')
+        self.cancel_emp_btn.pack_propagate(0)
+
+        ####Create frame for add and delete buttons
+        self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)
         self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
         self.manage_emp_frame.pack_propagate(0)
         self.add_button_image = ImageTk.PhotoImage(Image.open(add_button_path).resize((225, 50)))
@@ -199,99 +226,154 @@ class Window:
                                             font=title_font, bd=0, command=self.delete)  #### Create Delete button on employee management frame
         self.emp_delete_btn.pack(side='right')
         self.emp_delete_btn.pack_propagate(0)
-        self.full_list = self.request_employees()        #### Populate the listbox with the full list of employee initially
-        self.visible_list = self.request_employees()     #### Show the current requested employees
         self.update_search_listbox()        #### Update the search box based on the entered information
 
         ### Tab 2 Right
-        self.indent_amount = 50
-        self.entry_length = 35
         self.emp_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((100, 100)))       #### This should later call the backend to provide the employee's photo
         self.emp_pic_container = tk.Label(self.work_screen.tabs[1].body_frame.right_frame,      #### Put the employee photo in a container on the right side of the employees tab
                                           image=self.emp_pic, borderwidth=2, relief="groove", bg=skyblue)
         self.emp_pic_container.pack(side="top", pady=25)
+        self.emp_entries_frame = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color)  ### Create container for all the entires on the right
+        self.emp_entries_frame.pack(side="top", expand=True, fill="both", padx=25, pady=(0,25))
+        self.emp_entries_spacing = 7
 
-        self.work_screen.tabs[1].body_frame.right_frame.configure(bd=self.indent_amount)
+        ####Add a field for the employee's first name
+        self.emp_f_name = tk.StringVar()
+        self.emp_line1_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line1_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_f_name_label = tk.Label(self.emp_line1_container, font=basic_font, bg=bg_color2, text="First Name:", fg='black')
+        self.emp_f_name_label.pack(side="left", fill="x")
+        self.emp_f_name_entry = tk.Entry(self.emp_line1_container, textvariable=self.emp_f_name, 
+                                            font=basic_font, bg=bg_color, fg='black', width=35)
+        self.emp_f_name_entry.pack(side="left", fill="x")
+        
+        #### Add a field for the employee's last name
+        self.emp_l_name = tk.StringVar()
+        self.emp_line2_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line2_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_l_name_label = tk.Label(self.emp_line2_container, font=basic_font, bg=bg_color2, text="Last Name:", fg='black')
+        self.emp_l_name_label.pack(side="left", fill="x")
+        self.emp_l_name_entry = tk.Entry(self.emp_line2_container, textvariable=self.emp_l_name, 
+                                            font=basic_font, bg=bg_color, fg='black', width=18)
+        self.emp_l_name_entry.pack(side="left", fill="x")
 
-        self.emp_name = tk.StringVar()
-        self.emp_name_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
-        self.emp_name_label_container.pack(pady=5, fill="x")
-        self.emp_name_label = tk.Label(self.emp_name_label_container, font=basic_font,    #### Add a field for the employee's name
-                                       bg=bg_color2, text="Employee:", fg='black')
-        self.emp_name_label.pack(side="left")
-        self.emp_name_entry = tk.Entry(self.emp_name_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_name, width=self.entry_length, fg='black')
-        self.emp_name_entry.pack(side="left", fill="x")
-        self.emp_name_entry.bind("<Return>", self.update_working_employee)
+        #### Add a field for the employee's id
+        self.emp_id = tk.StringVar()
+        self.emp_id_label = tk.Label(self.emp_line2_container, font=basic_font, bg=bg_color2, text="ID:", fg='black')
+        self.emp_id_label.pack(side="left", fill="x")
+        self.emp_id_entry = tk.Entry(self.emp_line2_container, textvariable=self.emp_id,
+                                        font=basic_font, bg=bg_color, fg='black', width=10)
+        self.emp_id_entry.pack(side="left", fill="x")
 
-        self.last_selected_emp_info = ""
+        #### Add a field for the employee's payment type
         self.emp_payment = tk.StringVar()
-        self.emp_payment_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
-        self.emp_payment_label_container.pack(pady=5, fill="x")
-        self.emp_payment_label = tk.Label(self.emp_payment_label_container, font=basic_font,  #### Add a field for the employee's payment type
-                                         bg=bg_color2, text="Payment type:", fg='black')
-        self.emp_payment_label.pack(side="left")
-        self.payment_types = ["Hourly", "Salaried", "Commissioned"]
-        self.emp_payment_type_optionlist = tk.OptionMenu(self.emp_payment_label_container, self.emp_payment, *self.payment_types)
+        self.payment_types = ["Hourly", "Salaried", "Commissioned", "Unknown"]
+        self.emp_line3_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line3_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_payment_label = tk.Label(self.emp_line3_container, font=basic_font, bg=bg_color2, text="Payment Type:", fg='black')
+        self.emp_payment_label.pack(side="left", fill="x")
+        self.emp_payment_type_optionlist = tk.OptionMenu(self.emp_line3_container, self.emp_payment, *self.payment_types)
+        self.emp_payment_type_optionlist.configure(width=10)
         self.emp_payment_type_optionlist.pack(side="left", fill="x")
-        self.emp_payment_type_optionlist.bind("<Return>", self.update_working_employee)
 
+        #### Add a field for the employee's salary
         self.emp_salary = tk.StringVar()
-        self.emp_salary_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
-        self.emp_salary_label_container.pack(pady=5, fill="x")
-        self.emp_salary_label = tk.Label(self.emp_salary_label_container, font=basic_font,  #### Add a field for the employee's pay amount
-                                         bg=bg_color2, text="Amount:", fg='black')
-        self.emp_salary_label.pack(side="left")
-        self.emp_salary_entry = tk.Entry(self.emp_salary_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_salary, width=self.entry_length, fg='black')
+        self.emp_salary_label = tk.Label(self.emp_line3_container, font=basic_font, bg=bg_color2, text="Salary:", fg='black')
+        self.emp_salary_label.pack(side="left", fill="x")
+        self.emp_salary_entry = tk.Entry(self.emp_line3_container, textvariable=self.emp_salary,
+                                            font=basic_font, bg=bg_color, fg='black', width=12)
         self.emp_salary_entry.pack(side="left", fill="x")
-        self.emp_salary_entry.bind("<Return>", self.update_working_employee)
+        
+        #### Add a field for the employee's hourly rate
+        self.emp_rate = tk.StringVar()
+        self.emp_line4_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line4_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_rate_label = tk.Label(self.emp_line4_container, font=basic_font, bg=bg_color2, text="Hourly Rate:", fg='black')
+        self.emp_rate_label.pack(side="left", fill="x")
+        self.emp_rate_entry = tk.Entry(self.emp_line4_container, textvariable=self.emp_rate,
+                                        font=basic_font, bg=bg_color, fg='black', width=9)
+        self.emp_rate_entry.pack(side="left", fill="x")
 
+        #### Add a field for the employee's commission
+        self.emp_com = tk.StringVar()
+        self.emp_com_label = tk.Label(self.emp_line4_container, font=basic_font, bg=bg_color2, text="Commission:", fg='black')
+        self.emp_com_label.pack(side="left", fill="x")
+        self.emp_com_entry = tk.Entry(self.emp_line4_container, textvariable=self.emp_com,
+                                        font=basic_font, bg=bg_color, fg='black')
+        self.emp_com_entry.pack(side="left", fill="x")
+
+        #### Add a field for the employee's address
         self.emp_address = tk.StringVar()
-        self.emp_address_label_container = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color2)
-        self.emp_address_label_container.pack(pady=5, fill="x")
-        self.emp_address_label = tk.Label(self.emp_address_label_container, font=basic_font,  #### Add a field for the employee's address
-                                         bg=bg_color2, text="Address:", fg='black')
-        self.emp_address_label.pack(side="left")
-        self.emp_address_entry = tk.Entry(self.emp_address_label_container, font=basic_font, bg=bg_color, textvariable=self.emp_address, width=self.entry_length, fg='black')
+        self.emp_line5_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line5_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_address_label = tk.Label(self.emp_line5_container, font=basic_font, bg=bg_color2, text="Address:", fg='black')
+        self.emp_address_label.pack(side="left", fill="x")
+        self.emp_address_entry = tk.Entry(self.emp_line5_container, textvariable=self.emp_address,
+                                            font=basic_font, bg=bg_color, fg='black', width=35)
         self.emp_address_entry.pack(side="left", fill="x")
-        self.emp_address_entry.bind("<Return>", self.update_working_employee)
+        
+        #### Add a field for the employee's city
+        self.emp_city = tk.StringVar()
+        self.emp_line6_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line6_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_city_label = tk.Label(self.emp_line6_container, font=basic_font, bg=bg_color2, text="City:", fg='black')
+        self.emp_city_label.pack(side="left", fill="x")
+        self.emp_city_entry = tk.Entry(self.emp_line6_container, textvariable=self.emp_city,
+                                        font=basic_font, bg=bg_color, fg='black', width=14)
+        self.emp_city_entry.pack(side="left", fill="x")
+
+        #### Add a field for the employee's state
+        self.emp_state = tk.StringVar()
+        self.emp_state_label = tk.Label(self.emp_line6_container, font=basic_font, bg=bg_color2, text="State:", fg='black')
+        self.emp_state_label.pack(side="left", fill="x")
+        self.emp_state_entry = tk.Entry(self.emp_line6_container, textvariable=self.emp_state,
+                                        font=basic_font, bg=bg_color, fg='black', width=5)
+        self.emp_state_entry.pack(side="left", fill="x")
+
+        #### Add a field for the employee's zip
+        self.emp_zip = tk.StringVar()
+        self.emp_zip_label = tk.Label(self.emp_line6_container, font=basic_font, bg=bg_color2, text="Zip:", fg='black')
+        self.emp_zip_label.pack(side="left", fill="x")
+        self.emp_zip_entry = tk.Entry(self.emp_line6_container, textvariable=self.emp_zip,
+                                        font=basic_font, bg=bg_color, fg='black', width=8)
+        self.emp_zip_entry.pack(side="left", fill="x")
+
+        #### Add a field for the employee's routing number
+        self.emp_routing = tk.StringVar()
+        self.emp_line7_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line7_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_routing_label = tk.Label(self.emp_line7_container, font=basic_font, bg=bg_color2, text="Routing Number:", fg='black')
+        self.emp_routing_label.pack(side="left", fill="x")
+        self.emp_routing_entry = tk.Entry(self.emp_line7_container, textvariable=self.emp_routing,
+                                            font=basic_font, bg=bg_color, fg='black', width=35)
+        self.emp_routing_entry.pack(side="left", fill="x")
+
+        #### Add a field for the employee's account number
+        self.emp_account = tk.StringVar()
+        self.emp_line8_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
+        self.emp_line8_container.pack(pady=self.emp_entries_spacing, fill="x")
+        self.emp_account_label = tk.Label(self.emp_line8_container, font=basic_font, bg=bg_color2, text="Accounting Number:", fg='black')
+        self.emp_account_label.pack(side="left", fill="x")
+        self.emp_account_entry = tk.Entry(self.emp_line8_container, textvariable=self.emp_account,
+                                            font=basic_font, bg=bg_color, fg='black', width=35)
+        self.emp_account_entry.pack(side="left", fill="x")
+
+        #self.emp_payment_type_optionlist.bind("<Return>", self.update_working_employee)
+        #self.emp_f_name_entry.bind("<Return>", self.update_working_employee)
+        #self.emp_salary_entry.bind("<Return>", self.update_working_employee)
+        #self.emp_address_entry.bind("<Return>", self.update_working_employee)
         
         #Set the show/hide for each screen for the intial view when the application is launched
-        #self.login_screen.hide()
-        #self.work_screen.show()
-        self.login_screen.show()
-        self.work_screen.hide()
+        self.login_screen.hide()
+        self.adding_emp_frame.pack_forget()    # Hide the adding frame
+        self.work_screen.show()
+        self.work_screen.tabs[0].show_body()   # Show the tab 1 body
+        #self.login_screen.show()
+        #self.work_screen.hide()
 
         #Hide various widgets based on user permissions
         #if not self.Controller.isAdmin(user):
         #self.manage_emp_frame.pack_forget()
-
-    
-    def add(self):
-        """
-        Add a new employee to the database
-        """
-        blank = empClass.Employee() # Create a new employee
-        id_list = []
-        new_id = None
-        for employee in self.Controller.request_employees():
-            id_list.append(employee.emp_id)
-        while (new_id := random.randrange(100000, 999999)) in id_list: pass
-        blank.emp_id = new_id   # Assign the blank employee an ID that is not already taken
-        self.Controller.add_employee(blank) # Add the employee
-        self.full_list = self.request_employees()   # Update the visible list of employees
-        self.visible_list = self.request_employees()
-        self.emp_search_field.delete(0, tk.END)
-        self.update_search_listbox()
-
-    def delete(self):
-        """
-        Delete the currently selected employee from the database
-        """
-        self.Controller.remove_employee(self.current_working_employee.emp_id) # Remove the currently selected employee from the database
-        self.full_list = self.request_employees()
-        self.visible_list = self.request_employees()    # Update the visible list of employees
-        self.emp_search_field.delete(0, tk.END)
-        self.update_search_listbox() 
 
     def run(self):
         """
@@ -305,8 +387,90 @@ class Window:
         """
         self.Controller.on_exit()   # Let the controller know the GUI is about to be closed, save anything necessary
         self.root.destroy()      # When the user closes the program destroy the root window
+
+    def add(self):
+        """
+        Set view such that it is clear to the user that a new employee is being created
+        """
+        self.emp_box['state'] = tk.DISABLED
+        self.manage_emp_frame.pack_forget()    # Hide the managing frame
+        self.adding_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))    # Show the adding frame
+        self.set_fields_empty()   # Empty entry fields
+        self.emp_id.set("Auto Generated")   # Notify user that the id is auto generated
+
+    def delete(self):
+        """
+        Delete the currently selected employee from the database
+        """
+        if not self.emp_box.curselection(): return   # Check if anything in the emp box is currently selected/highlighted
+        self.confirm_result = False
+        Confirmation(self.root, self, "Delete this employee?", self.colors[self.color_index])   # Confirm changes
+        if not self.confirm_result: return   # Don't delete if user declines deletion
+        self.Controller.remove_employee(self.current_working_employee.emp_id) # Remove the currently selected employee from the database
+        self.full_list = self.request_employees()
+        self.visible_list = self.request_employees()    # Update the visible list of employees
+        self.emp_search_field.delete(0, tk.END)   # Clear the search field
+        self.set_fields_empty()   # Clear the entry fields
+        self.last_selected = -1   # Remember that an employee was just deleted
+        self.update_search_listbox()  # Populate listbox with employees in the visible list
     
-    def login(self, event=None):
+    def confirm_adding(self):
+        """
+        Add a new employee to the database
+        """
+        blank = empClass.Employee() # Create empty employee object
+        new_emp_info = self.get_emp_entry_info().split(",")
+        
+        #Generate new id
+        id_list = []
+        new_id = None
+        for employee in self.Controller.request_employees():
+            id_list.append(employee.emp_id)
+        while (new_id := random.randrange(100000, 999999)) in id_list: pass
+        
+        #Add information to the employee object
+        blank.emp_id = new_id   # Assign the blank employee an ID that is not already taken
+        blank.f_name = new_emp_info[0]
+        blank.l_name = new_emp_info[1]
+        blank.address = new_emp_info[7]
+        blank.city = new_emp_info[8]
+        blank.state = new_emp_info[9]
+        blank.zipcode = new_emp_info[10]
+        blank.classification = new_emp_info[3]
+        blank.AccountNumber = new_emp_info[12]
+        blank.RoutingNumber = new_emp_info[11]
+        blank.hourly = new_emp_info[5]
+        blank.salary = new_emp_info[4]
+        blank.commission = new_emp_info[6]
+
+        self.Controller.add_employee(blank) # Add the employee
+        print(self.request_employees())
+        #Update the GUI
+        self.full_list = self.request_employees()
+        self.visible_list = self.request_employees()   # Update the visible list of employees
+        self.emp_search_field.delete(0, tk.END)   # Clear the search field
+        self.finish_adding()   # Set the view back to normal
+        self.update_search_listbox()  # Populate listbox with employees in the visible list
+        Notice(self.root, "Employee added.", self.colors[self.color_index])
+
+    def cancel_adding(self):
+        """
+        Don't add the new employee
+        """
+        self.finish_adding()
+    
+    def finish_adding(self):
+        """
+        Set the view back to its normal state
+        """
+        self.emp_box['state'] = tk.NORMAL
+        self.emp_box.selection_clear(0, tk.END)
+        self.adding_emp_frame.pack_forget()    # Hide the adding frame
+        self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))    # Show the managing frame
+        self.set_fields_empty()   # Empty entry fields
+        self.last_selected = -1
+
+    def login(self):
         """
         Verifies the user's login credentials. If the credentials are incorrect, show a warning notice. Otherwise, login the user.
         """
@@ -314,7 +478,7 @@ class Window:
             self.login_screen.hide()    # Hide the login page
             self.work_screen.show()     # Show the work screen
         else:
-            popup = Notice(self.root, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
+            Notice(self.root, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
     
     def search_keyrelease(self, event):
         """
@@ -326,17 +490,16 @@ class Window:
             if search_string.lower()[:len(search_string)] == i.lower()[:len(search_string)]:
                 self.visible_list.append(i)     # If an employee is found that matches the search, add it to the array
         self.update_search_listbox()    # Update the search listbox with the list of found employee matching the search
-    
+
     def listbox_select(self, event):
         """
-        Updates the employee information on the right tab when an employee is selected in the left tab
+        Updates the employee information on the right side of the tab when an employee is selected in the left side of the tab
         """
         selection = event.widget.curselection()     # When the user clicks on an employee
-        index = selection[0]
-        data = event.widget.get(index)
-        name = data.split()
-        self.current_working_employee = next(employee for employee in self.Controller.request_employees() if ((employee.f_name == name[0]) and (employee.l_name == name[1])))
         if selection:
+            index = selection[0]
+            data = event.widget.get(index)
+            name = data.split()   # Save the name found in the scroll list of employees
 
             if index != self.last_selected:   # If a different employee is being selected
 
@@ -349,44 +512,74 @@ class Window:
                         #self.Controller.update_employee(selected_emp_info)
                         pass
 
-                self.emp_name_entry.delete(0, last="end")
-                self.emp_name_entry.insert(0, data)         # Update the employee information on the right tab
+                self.set_fields_as_selected(name)   # Update fields
 
-                #self.emp_payment_entry.delete(0, tk.END)
-                self.emp_classification = self.current_working_employee.classification
-                if isinstance(self.emp_classification, Hourly): self.emp_classification = "Hourly"
-                elif isinstance(self.emp_classification, Salaried): self.emp_classification = "Salaried"
-                elif isinstance(self.emp_classification, Commissioned): self.emp_classification = "Commissioned"
-                else: self.emp_classification = "Unknown"
-                self.emp_payment.set(self.emp_classification)
-                #self.emp_payment_entry.insert(0, self.emp_classification)
-
-                self.emp_salary_entry.delete(0, tk.END)
-                self.emp_pay_amount = ""
-                if (self.emp_classification == "Hourly"): self.emp_pay_amount = self.current_working_employee.hourly
-                elif (self.emp_classification == "Salaried"): self.emp_pay_amount = self.current_working_employee.salary
-                elif (self.emp_classification == "Commissioned"): self.emp_pay_amount = self.current_working_employee.commission
-                else: self.emp_pay_amount = "Unknown"
-                self.emp_salary_entry.insert(0, self.emp_pay_amount)
-
-                self.emp_address_entry.delete(0, tk.END)
-                self.emp_address_string = self.current_working_employee.address
-                self.emp_address_entry.insert(0, self.emp_address_string)
+                #Remember this selection for the next select event
                 self.last_selected_emp_info = self.get_emp_entry_info()
                 self.last_selected = self.emp_box.curselection()[0]
 
-        else:
-            self.emp_name_label.configure(text="")
+    def set_fields_as_selected(self, name):
+        """
+        Receive an employee name as a string. A list of employee objects will be searched to find the correct employee object.
+        Fields in the employee tab will then be set to the values of the employee object.
+        """
+        self.current_working_employee = next(employee for employee in self.Controller.request_employees() if ((employee.f_name == name[0]) and (employee.l_name == name[1])))
+        if self.current_working_employee is None: return
+
+        self.emp_f_name.set(self.current_working_employee.f_name)
+        self.emp_l_name.set(self.current_working_employee.l_name)
+        self.emp_id.set(self.current_working_employee.emp_id)
+        self.emp_salary.set(self.current_working_employee.salary)
+        self.emp_rate.set(self.current_working_employee.hourly)
+        self.emp_com.set(self.current_working_employee.commission)
+        self.emp_address.set(self.current_working_employee.address)
+        self.emp_city.set(self.current_working_employee.city)
+        self.emp_state.set(self.current_working_employee.state)
+        self.emp_zip.set(self.current_working_employee.zipcode)
+        self.emp_routing.set(self.current_working_employee.RoutingNumber)
+        self.emp_account.set(self.current_working_employee.AccountNumber)
+
+        if isinstance(self.current_working_employee.classification, Hourly): self.emp_payment.set("Hourly")
+        elif isinstance(self.current_working_employee.classification, Commissioned): self.emp_payment.set("Commissioned")
+        elif isinstance(self.current_working_employee.classification, Salaried): self.emp_payment.set("Salaried")
+        else: self.emp_payment.set("Unknown")
+
+    def set_fields_empty(self):
+        """
+        Set the fields in the left side of the employee tab to be empty
+        """
+        self.emp_f_name.set("")
+        self.emp_l_name.set("")
+        self.emp_id.set("")
+        self.emp_salary.set("")
+        self.emp_rate.set("")
+        self.emp_com.set("")
+        self.emp_address.set("")
+        self.emp_city.set("")
+        self.emp_state.set("")
+        self.emp_zip.set("")
+        self.emp_routing.set("")
+        self.emp_account.set("")
+        self.emp_payment.set("Unknown")
 
     def get_emp_entry_info(self):
         """
         Return all the information in the right side entry fields as a string
         """
         string = ""
-        string += self.emp_name_entry.get() + ","
+        string += self.emp_f_name.get() + ","
+        string += self.emp_l_name.get() + ","
+        string += self.emp_id.get() + ","
         string += self.emp_payment.get() + ","
-        string += self.emp_salary_entry.get() + ","
-        string += self.emp_address_entry.get()
+        string += self.emp_salary.get() + ","
+        string += self.emp_rate.get() + ","
+        string += self.emp_com.get() + ","
+        string += self.emp_address.get() + ","
+        string += self.emp_city.get() + ","
+        string += self.emp_state.get() + ","
+        string += self.emp_zip.get() + ","
+        string += self.emp_routing.get() + ","
+        string += self.emp_account.get()
         return string
     
     def update_search_listbox(self):
