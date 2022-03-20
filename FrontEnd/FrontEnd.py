@@ -65,6 +65,7 @@ class Window:
         self.last_selected = -1
         self.confirm_result = False
         self.last_selected_emp_info = ""
+        self.is_adding = False
         self.full_list = self.request_employees()
         self.visible_list = self.request_employees()
         
@@ -149,6 +150,7 @@ class Window:
         self.work_screen.tabs[0].tab_button.configure(text = "Dashboard")
         self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)    ### Configure the Dashboard tab name and attributes
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
+        self.work_screen.tabs[0].show_body()   # Show the tab 0 body as initial view upon login
         self.dashboard_buttons_frame = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color) ### Create a frame to hold the buttons
         self.dashboard_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
@@ -227,6 +229,7 @@ class Window:
                                             font=title_font, bd=0, command=self.cancel_adding)  #### Create cancel button on employee adding frame
         self.cancel_emp_btn.pack(side='right')
         self.cancel_emp_btn.pack_propagate(0)
+        self.adding_emp_frame.pack_forget()    # Hide the adding frame
 
         ####Create frame for add and delete buttons
         self.manage_emp_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color, height=50)
@@ -280,6 +283,7 @@ class Window:
         self.emp_id_entry = tk.Entry(self.emp_line2_container, textvariable=self.emp_id,
                                         font=basic_font, bg=bg_color, fg='black', width=10)
         self.emp_id_entry.pack(side="left", fill="x")
+        self.emp_id_entry['state'] = tk.DISABLED
 
         #### Add a field for the employee's payment type
         self.emp_payment = tk.StringVar()
@@ -375,16 +379,10 @@ class Window:
         self.emp_account_entry.pack(side="left", fill="x")
         
         #Set the show/hide for each screen for the intial view when the application is launched
-        self.login_screen.hide()
-        self.adding_emp_frame.pack_forget()    # Hide the adding frame
-        self.work_screen.show()
-        self.work_screen.tabs[0].show_body()   # Show the tab 0 body as initial view upon login
-        #self.login_screen.show()
-        #self.work_screen.hide()
-
-        #Hide various widgets based on user permissions
-        #if not self.Controller.isAdmin(user):
-        #self.manage_emp_frame.pack_forget()
+        #self.login_screen.hide()
+        #self.work_screen.show()
+        self.login_screen.show()
+        self.work_screen.hide()
 
     def run(self):
         """
@@ -400,6 +398,66 @@ class Window:
         self.Controller.on_exit()   # Let the controller know the GUI is about to be closed, save anything necessary
         self.root.destroy()      # When the user closes the program destroy the root window
 
+    def login(self, event=None):
+        """
+        Verifies the user's login credentials. If the credentials are incorrect, show a warning notice. Otherwise, login the user.
+        """
+        if self.Controller.VerifyLogin(self.username.get(), self.password.get()):  # If the user enters correct credentials
+            #Clear credential entries
+            self.username.set("")
+            self.password.set("")
+            
+            #Hide various widgets based on user permissions
+            if not is_admin():#if not self.Controller.is_admin():
+                self.manage_emp_frame.pack_forget()
+                self.emp_routing_entry['state'] = tk.DISABLED
+                self.emp_account_entry['state'] = tk.DISABLED
+                self.emp_salary_entry['state'] = tk.DISABLED
+                self.emp_rate_entry['state'] = tk.DISABLED
+                self.emp_com_entry['state'] = tk.DISABLED
+                self.emp_f_name_entry['state'] = tk.DISABLED
+                self.emp_l_name_entry['state'] = tk.DISABLED
+                self.emp_address_entry['state'] = tk.DISABLED
+                self.emp_city_entry['state'] = tk.DISABLED
+                self.emp_state_entry['state'] = tk.DISABLED
+                self.emp_zip_entry['state'] = tk.DISABLED
+                self.emp_payment_type_optionlist['state'] = tk.DISABLED
+            else:
+                self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
+                self.emp_routing_entry['state'] = tk.NORMAL
+                self.emp_account_entry['state'] = tk.NORMAL
+                self.emp_salary_entry['state'] = tk.NORMAL
+                self.emp_rate_entry['state'] = tk.NORMAL
+                self.emp_com_entry['state'] = tk.NORMAL
+                self.emp_f_name_entry['state'] = tk.NORMAL
+                self.emp_l_name_entry['state'] = tk.NORMAL
+                self.emp_address_entry['state'] = tk.NORMAL
+                self.emp_city_entry['state'] = tk.NORMAL
+                self.emp_state_entry['state'] = tk.NORMAL
+                self.emp_zip_entry['state'] = tk.NORMAL
+                self.emp_payment_type_optionlist['state'] = tk.NORMAL
+                
+            self.login_screen.hide()    # Hide the login page
+            self.work_screen.show()     # Show the work screen
+        else:
+            Notice(self.root, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
+
+    def logout(self):
+        """
+        Take user back to the login screen.
+        """
+        # Make sure there is no employee being added
+        if self.is_adding == True:
+            self.work_screen.focus_tab(self.work_screen.tabs[1]) # Make sure the correct tab is in focus
+            Notice(self.root, "Please finish adding employee.", self.colors[self.color_index])
+            return
+        self.check_entry_changes() # Make sure to save any unsaved edits
+        self.set_fields_empty()   # Empty entry fields
+        self.last_selected_emp_info = ""   # Clear info from the last selected employee
+        self.last_selected = -1   # Forget that anyone was ever selected
+        self.work_screen.hide()     # Hide the work screen
+        self.login_screen.show()    # Show the login page
+    
     def show_guide(self):
         """
         Show the user guide.
@@ -422,6 +480,7 @@ class Window:
         Set view such that it is clear to the user that a new employee is being created
         """
         self.check_entry_changes() # Check for any changes to employees that need to be saved
+        self.is_adding = True
         self.emp_box['state'] = tk.DISABLED
         self.manage_emp_frame.pack_forget()    # Hide the managing frame
         self.adding_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))    # Show the adding frame
@@ -447,10 +506,30 @@ class Window:
     
     def confirm_adding(self):
         """
-        Add a new employee to the database
+        Verify information from fields and add a new employee to the database.
+        """
+        #Verify and add new employee
+        verified_info = self.verify()
+        new_emp = self.create_new_emp(verified_info)
+        
+        if new_emp is not None:
+            self.Controller.add_employee(new_emp) # Add the employee to the database
+            
+            #Update the GUI
+            self.full_list = self.request_employees()
+            self.visible_list = self.request_employees()   # Update the visible list of employees
+            self.emp_search_field.delete(0, tk.END)   # Clear the search field
+            self.finish_adding()   # Set the view back to normal
+            self.update_search_listbox()  # Populate listbox with employees in the visible list
+            Notice(self.root, "Employee added.", self.colors[self.color_index])
+        
+    def verify(self):
+        """
+        Get information from the entry fields and verify that it is valid.
+        Returns verified information as a list.
         """
         new_emp_info = self.get_emp_entry_info().split(",")
-        
+
         #Verify that no field is empty
         if True in [i=="" for i in new_emp_info]:
             Notice(self.root, "Field(s) cannot be empty.", self.colors[self.color_index])
@@ -461,6 +540,7 @@ class Window:
         if new_emp_info[3] not in classify.keys():
             Notice(self.root, "Must select payment type.", self.colors[self.color_index])
             return
+        new_emp_info[3] = classify[new_emp_info[3]] # Change the classification to its integer value
 
         #Verify city
         if True in [char.isdigit() for char in new_emp_info[8]]:
@@ -494,7 +574,7 @@ class Window:
         had_decimal = False
         if len(new_emp_info[4]) >= 3 and new_emp_info[4][-3] == ".": had_decimal = True   # Check for a decimal at the right spot
         new_emp_info[4] = new_emp_info[4][:-3] + new_emp_info[4][-2:]   # Remove the decimal from the string
-        if not new_emp_info[4].isnumeric():
+        if not new_emp_info[4].isnumeric():   # Check if everything else is only numbers
             Notice(self.root, "Please enter a vaild salary.", self.colors[self.color_index])
             return
         if had_decimal: new_emp_info[4] = new_emp_info[4][:-2] + "." + new_emp_info[4][-2:]   # Add decimal back in
@@ -506,7 +586,7 @@ class Window:
         had_decimal = False
         if len(new_emp_info[5]) >= 3 and new_emp_info[5][-3] == ".": had_decimal = True   # Check for a decimal at the right spot
         new_emp_info[5] = new_emp_info[5][:-3] + new_emp_info[5][-2:]   # Remove the decimal from the string
-        if not new_emp_info[5].isnumeric():
+        if not new_emp_info[5].isnumeric():   # Check if everything else is only numbers
             Notice(self.root, "Please enter a vaild hourly rate.", self.colors[self.color_index])
             return
         if had_decimal: new_emp_info[5] = new_emp_info[5][:-2] + "." + new_emp_info[5][-2:]   # Add decimal back in
@@ -517,41 +597,45 @@ class Window:
             Notice(self.root, "Commission must only contain numbers.", self.colors[self.color_index])
             return
 
-    
+        return new_emp_info
+
+    def create_new_emp(self, new_emp_info, with_new_id=True):
+        """
+        Receives verified information and creates a new employee object from it. 
+        Generates a new ID.Returns employee object.
+        """
+
         #Generate new id
-        id_list = []
-        new_id = None
-        for employee in self.Controller.request_employees():
-            id_list.append(employee.emp_id)
-        while (new_id := random.randrange(100000, 999999)) in id_list: pass
+        if with_new_id:
+            id_list = []
+            for employee in self.Controller.request_employees():
+                id_list.append(employee.emp_id)
+            while True:
+                new_id = random.randrange(100000, 999999)
+                if new_id not in id_list: break
+        else:
+            new_id = int(new_emp_info[2])
 
-        # Create the new employee object
-        new_emp = empClass.Employee(
-            emp_id = new_id,
-            Class = classify[new_emp_info[3]],
-            f_name = new_emp_info[0],
-            l_name = new_emp_info[1],
-            address = new_emp_info[7],
-            city = new_emp_info[8],
-            state = new_emp_info[9],
-            zipcode = new_emp_info[10],
-            account = new_emp_info[12],
-            route = new_emp_info[11],
-            hourly = new_emp_info[5],
-            salary = new_emp_info[4],
-            commission = new_emp_info[6]
-        )
-
-        self.Controller.add_employee(new_emp) # Add the employee to the database
-        print(self.request_employees())
-        
-        #Update the GUI
-        self.full_list = self.request_employees()
-        self.visible_list = self.request_employees()   # Update the visible list of employees
-        self.emp_search_field.delete(0, tk.END)   # Clear the search field
-        self.finish_adding()   # Set the view back to normal
-        self.update_search_listbox()  # Populate listbox with employees in the visible list
-        Notice(self.root, "Employee added.", self.colors[self.color_index])
+        #Create new employee
+        try:
+            new_emp = empClass.Employee(
+                emp_id = new_id,
+                Class = new_emp_info[3],
+                f_name = new_emp_info[0],
+                l_name = new_emp_info[1],
+                address = new_emp_info[7],
+                city = new_emp_info[8],
+                state = new_emp_info[9],
+                zipcode = new_emp_info[10],
+                account = new_emp_info[12],
+                route = new_emp_info[11],
+                hourly = new_emp_info[5],
+                salary = new_emp_info[4],
+                commission = new_emp_info[6]
+            )
+        except:
+            return None
+        return new_emp
 
     def cancel_adding(self):
         """
@@ -563,32 +647,13 @@ class Window:
         """
         Set the view back to its normal state
         """
+        self.is_adding = False
         self.emp_box['state'] = tk.NORMAL
         self.emp_box.selection_clear(0, tk.END)
         self.adding_emp_frame.pack_forget()    # Hide the adding frame
         self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))    # Show the managing frame
         self.set_fields_empty()   # Empty entry fields
         self.last_selected = -1
-
-    def login(self, event=None):
-        """
-        Verifies the user's login credentials. If the credentials are incorrect, show a warning notice. Otherwise, login the user.
-        """
-        if self.Controller.VerifyLogin(self.username.get(), self.password.get()):  # If the user enters correct credentials
-            self.username.set("")
-            self.password.set("")
-            self.login_screen.hide()    # Hide the login page
-            self.work_screen.show()     # Show the work screen
-        else:
-            Notice(self.root, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
-
-    def logout(self):
-        """
-        Take user back to the login screen.
-        """
-        self.set_fields_empty()   # Empty entry fields
-        self.work_screen.hide()     # Hide the work screen
-        self.login_screen.show()    # Show the login page
     
     def search_keyrelease(self, event):
         """
@@ -612,26 +677,36 @@ class Window:
             name = data.split()   # Save the name found in the scroll list of employees
 
             if index != self.last_selected:   # If a different employee is being selected
-                self.check_entry_changes() # Check for any changes to employees that need to be saved
+                was_updated = self.check_entry_changes() # Check for any changes to employees that need to be saved
                 self.set_fields_as_selected(name)   # Update fields
 
-                #Remember this selection for the next select event
-                self.last_selected_emp_info = self.get_emp_entry_info()
-                self.last_selected = self.emp_box.curselection()[0]
+                #Remember this selection for the next select event, unless something was updated
+                if not was_updated:
+                    self.last_selected_emp_info = self.get_emp_entry_info()
+                    self.last_selected = self.emp_box.curselection()[0]
+                else:
+                    self.last_selected_emp_info = ""
+                    self.last_selected = -1
+                    self.set_fields_empty()
 
     def check_entry_changes(self):
         """
         Checks to see if any changes were made to an employee that is selected.
         Prompts the user to save changes. Then saves changes accordingly.
+        Returns true if an employee was updated.
         """
-        #if self.Controller.isAdmin(user):
-        selected_emp_info = self.get_emp_entry_info()
-        if self.last_selected_emp_info != selected_emp_info and self.last_selected != -1:   # If changes were made in the entry fields
-            self.confirm_result = False
-            Confirmation(self.root, self, "Save changes to this employee?", self.colors[self.color_index])   # Confirm changes
-            if self.confirm_result:
-                #self.Controller.update_employee(selected_emp_info)
-                pass
+        if is_admin():#if self.Controller.is_admin():
+            selected_emp_info = self.get_emp_entry_info()
+            if self.last_selected_emp_info != selected_emp_info and self.last_selected != -1:   # If changes were made in the entry fields
+                self.work_screen.focus_tab(self.work_screen.tabs[1]) # Make sure the correct tab is in focus
+                self.emp_box.selection_clear(0, tk.END) # Clear selection
+                self.emp_box.select_set(self.last_selected) # Reselect the employee in the emp_box that is being asked about
+                self.confirm_result = False
+                Confirmation(self.root, self, "Save changes to this employee?", self.colors[self.color_index])   # Confirm changes
+                if self.confirm_result:
+                    self.update_working_employee()
+                    return True
+        return False
     
     def set_fields_as_selected(self, name):
         """
@@ -641,18 +716,20 @@ class Window:
         self.current_working_employee = next(employee for employee in self.Controller.request_employees() if ((employee.f_name == name[0]) and (employee.l_name == name[1])))
         if self.current_working_employee is None: return
 
+        #Update fields based on permissions
+        if is_admin():#if self.Controller.is_admin():
+            self.emp_routing.set(self.current_working_employee.RoutingNumber)
+            self.emp_account.set(self.current_working_employee.AccountNumber)
+            self.emp_salary.set(self.current_working_employee.salary)
+            self.emp_rate.set(self.current_working_employee.hourly)
+            self.emp_com.set(self.current_working_employee.commission)
         self.emp_f_name.set(self.current_working_employee.f_name)
         self.emp_l_name.set(self.current_working_employee.l_name)
         self.emp_id.set(self.current_working_employee.emp_id)
-        self.emp_salary.set(self.current_working_employee.salary)
-        self.emp_rate.set(self.current_working_employee.hourly)
-        self.emp_com.set(self.current_working_employee.commission)
         self.emp_address.set(self.current_working_employee.address)
         self.emp_city.set(self.current_working_employee.city)
         self.emp_state.set(self.current_working_employee.state)
         self.emp_zip.set(self.current_working_employee.zipcode)
-        self.emp_routing.set(self.current_working_employee.RoutingNumber)
-        self.emp_account.set(self.current_working_employee.AccountNumber)
 
         if isinstance(self.current_working_employee.classification, Hourly): self.emp_payment.set("Hourly")
         elif isinstance(self.current_working_employee.classification, Commissioned): self.emp_payment.set("Commissioned")
@@ -716,34 +793,24 @@ class Window:
             names.append(employee.f_name+" "+employee.l_name)   # Get all the names from the employee list
         return names
 
-    def update_working_employee(self, event):
+    def update_working_employee(self):
         """
         Updates the currently selected employee with new data once the enter key is pressed
         """
-        new_name = self.emp_name.get().split()  # Get all the new data from tk entries
-        new_payment_type = self.emp_payment.get().lower()
-        new_payment_amount = self.emp_salary.get()
-        if not (new_payment_amount.isnumeric() or isfloat(new_payment_amount)):
-            Notice(self.root, "Payment amount must be a number", self.colors[self.color_index])
-            return
-        new_address = self.emp_address.get()
-
-        empID = self.current_working_employee.emp_id
-        new_employee = copy.copy(self.current_working_employee) # Create a copy of the current working employee
-        new_employee.f_name = new_name[0]
-        new_employee.l_name = new_name[1]
-        new_employee.address = new_address
-        if new_payment_type == "hourly": new_payment_type = Hourly(new_payment_amount); new_employee.hourly = new_payment_amount    # Format data and add to copy
-        elif new_payment_type == "salaried": new_payment_type = Salaried(new_payment_amount); new_employee.salary = new_payment_amount
-        elif new_payment_type == "commisioned": new_payment_type = Commissioned(new_payment_amount, 100); new_employee.commission = new_payment_amount
-        else: new_payment_type = None
-        new_employee.classification = new_payment_type
+        #Verify and add new employee
+        verified_info = self.verify()
+        if verified_info is None: return
+        new_emp = self.create_new_emp(verified_info, with_new_id=False)
         
-        self.Controller.update_employee(empID, new_employee)    # Update the employee in the database
-        self.full_list = self.request_employees()
-        self.visible_list = self.request_employees()    # Update the list of employees on the frontend
-        self.emp_search_field.delete(0, tk.END)
-        self.update_search_listbox()
+        if new_emp is not None:
+            self.Controller.update_employee(new_emp.emp_id, new_emp) # Add the employee to the database
+            
+            #Update the GUI
+            self.full_list = self.request_employees()
+            self.visible_list = self.request_employees()   # Update the visible list of employees
+            self.emp_search_field.delete(0, tk.END)   # Clear the search field
+            self.update_search_listbox()  # Populate listbox with employees in the visible list
+            Notice(self.root, "Employee updated.", self.colors[self.color_index])
 
     def change_colors(self, event):
         
@@ -1030,3 +1097,6 @@ def isMAC():
     if 'Darwin' in platform.system():
         return True
     return False
+
+def is_admin():
+    return True
