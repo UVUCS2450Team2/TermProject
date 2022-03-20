@@ -35,6 +35,7 @@ delete_button_path = folder_path+"delete_button.PNG"
 confirm_button_path = folder_path+"confirm_button.PNG"
 cancel_button_path = folder_path+"cancel_button.PNG"
 back_button_path = folder_path+"back_button.PNG"
+logout_button_path = folder_path+"logout_button.PNG"
 user_guide_path = folder_path+"user_guide.pdf"
 bg_color  = "white"
 bg_color2 = "#D7D8D9"
@@ -111,7 +112,6 @@ class Window:
                                         bd=0, bg=bg_color2, font=basic_font, show="*", fg='black')
         self.password_field.pack()
         self.password_field.bind("<Return>", self.login)
-        
         self.login_pic = ImageTk.PhotoImage(Image.open(logo_large_path).resize((350, 350)))     ## Load in the logo image
         self.login_pic_container = tk.Label(self.login_screen.right_frame, image=self.login_pic, bd=0, bg=skyblue)     ## Create a logo container on the right frame of the two column frame
         self.login_button_pic = ImageTk.PhotoImage(Image.open(login_button_path).resize((225, 40)))         ## Create the login button from image resource
@@ -146,21 +146,26 @@ class Window:
         self.work_screen = TabFrame(self.main_frame, 2) # Create x tabs in the tabs frame
 
         ## Create elements in tab 1, this will be the open tab upon logging in
-        self.work_screen.tabs[0].tab_button.configure(text = "Records")
-        self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)    ### Configure the Records tab name and attributes
+        self.work_screen.tabs[0].tab_button.configure(text = "Dashboard")
+        self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)    ### Configure the Dashboard tab name and attributes
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
-        self.record_buttons_frame = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color) ### Create a frame to hold the buttons
-        self.record_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
+        self.dashboard_buttons_frame = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color) ### Create a frame to hold the buttons
+        self.dashboard_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
-        self.payroll_button = tk.Button(self.record_buttons_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
+        self.payroll_button = tk.Button(self.dashboard_buttons_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
                                         command=lambda: Notice(self.root, "Under Development.", self.colors[self.color_index]))
-        self.payroll_button.pack(padx=100, pady=(50,10))
+        self.payroll_button.pack(padx=100, pady=(50,20))
         self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
-        self.user_guide_button = tk.Button(self.record_buttons_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
+        self.user_guide_button = tk.Button(self.dashboard_buttons_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, 
                                         width=738, height=183, command=self.show_guide)
-        self.user_guide_button.pack(padx=100, pady=(10,50))
+        self.user_guide_button.pack(padx=100, pady=(0,20))
+        self.logout_button_image = ImageTk.PhotoImage(Image.open(logout_button_path).resize((740, 185)))
+        self.logout_button = tk.Button(self.dashboard_buttons_frame, image=self.logout_button_image, ### Create a button for logout from image
+                                        bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, 
+                                        width=738, height=183, command=self.logout)
+        self.logout_button.pack(padx=100, pady=(0,50))
 
         if not isMAC():
             self.corner5_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
@@ -399,7 +404,7 @@ class Window:
         """
         Show the user guide.
         """
-        self.record_buttons_frame.place_forget()
+        self.dashboard_buttons_frame.place_forget()
         self.pdf_container.pack(expand=True, fill="both", padx=50, pady=(50,10))
         self.pdf_container.pack_propagate(0)
         self.back_button_container1.pack(side="bottom", fill="both", padx=(50,0), pady=(10,50))
@@ -408,7 +413,7 @@ class Window:
         """
         Hide the user guide when back button is pressed.
         """
-        self.record_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
+        self.dashboard_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
         self.pdf_container.pack_forget()
         self.back_button_container1.pack_forget()
 
@@ -565,15 +570,25 @@ class Window:
         self.set_fields_empty()   # Empty entry fields
         self.last_selected = -1
 
-    def login(self):
+    def login(self, event=None):
         """
         Verifies the user's login credentials. If the credentials are incorrect, show a warning notice. Otherwise, login the user.
         """
         if self.Controller.VerifyLogin(self.username.get(), self.password.get()):  # If the user enters correct credentials
+            self.username.set("")
+            self.password.set("")
             self.login_screen.hide()    # Hide the login page
             self.work_screen.show()     # Show the work screen
         else:
             Notice(self.root, "Incorrect username or password.", self.colors[self.color_index])     # Otherwise, tell the user they have entered the wrong credentials
+
+    def logout(self):
+        """
+        Take user back to the login screen.
+        """
+        self.set_fields_empty()   # Empty entry fields
+        self.work_screen.hide()     # Hide the work screen
+        self.login_screen.show()    # Show the login page
     
     def search_keyrelease(self, event):
         """
@@ -797,7 +812,7 @@ class TwoColumnFrame(Widget):
 
 class TabFrame(Widget):
     """
-    This class holds the frames for the records and employees tabs
+    This class holds the frames for the dashboards and employees tabs
     """
     def __init__(self, frame, tab_count):
         """
