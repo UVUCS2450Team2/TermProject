@@ -1,15 +1,12 @@
 import tkinter as tk
 from turtle import width
 from PIL import Image, ImageTk
+from tkPDFViewer import tkPDFViewer as pdf   # pip install tkPDFViewer
 from abc import ABC, abstractmethod
 from BackEnd import empClass
 from BackEnd.empClass import Employee, Hourly, Salaried, Commissioned
 import Interface.BasicController
-import copy
-import random
-import sys
-import os
-import platform
+import random, sys, os, platform
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -37,6 +34,8 @@ add_button_path = folder_path+"add_button.PNG"
 delete_button_path = folder_path+"delete_button.PNG"
 confirm_button_path = folder_path+"confirm_button.PNG"
 cancel_button_path = folder_path+"cancel_button.PNG"
+back_button_path = folder_path+"back_button.PNG"
+user_guide_path = folder_path+"user_guide.pdf"
 bg_color  = "white"
 bg_color2 = "#D7D8D9"
 skyblue = "#3bc3f1"
@@ -65,8 +64,8 @@ class Window:
         self.last_selected = -1
         self.confirm_result = False
         self.last_selected_emp_info = ""
-        self.full_list = self.request_employees()        #### Populate the listbox with the full list of employee initially
-        self.visible_list = self.request_employees()     #### Show the current requested employees
+        self.full_list = self.request_employees()
+        self.visible_list = self.request_employees()
         
         # This section creates the basic window with a light gray background
         self.root = tk.Tk() ## Create the root window
@@ -150,27 +149,39 @@ class Window:
         self.work_screen.tabs[0].tab_button.configure(text = "Records")
         self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)    ### Configure the Records tab name and attributes
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
+        self.record_buttons_frame = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color) ### Create a frame to hold the buttons
+        self.record_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
-        self.payroll_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
+        self.payroll_button = tk.Button(self.record_buttons_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
                                         command=lambda: Notice(self.root, "Under Development.", self.colors[self.color_index]))
-        self.payroll_button.pack(padx=100, pady=(50, 10))
-        self.payroll_button.pack_propagate(0)
+        self.payroll_button.pack(padx=100, pady=(50,10))
         self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
-        self.user_guide_button = tk.Button(self.work_screen.tabs[0].body_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
-                                        bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
-                                        command=lambda: Notice(self.root, "Under Development.", self.colors[self.color_index]))
-        self.user_guide_button.pack(padx=100, pady=(10, 55))
-        self.user_guide_button.pack_propagate(0)
+        self.user_guide_button = tk.Button(self.record_buttons_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
+                                        bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, 
+                                        width=738, height=183, command=self.show_guide)
+        self.user_guide_button.pack(padx=100, pady=(10,50))
 
         if not isMAC():
             self.corner5_image = ImageTk.PhotoImage(self.base_corner_image.rotate(90))
             self.corner5_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner5_image, bg=bg_color, bd=0) ### Add rounded corners to the body frame
-            self.corner5_container.pack(side="left")
+            #self.corner5_container.pack(side="left")
 
             self.corner6_image = ImageTk.PhotoImage(self.base_corner_image.rotate(180))
             self.corner6_container = tk.Label(self.work_screen.tabs[0].body_frame, image=self.corner6_image, bg=bg_color, bd=0)
-            self.corner6_container.pack(side="right")
+            #self.corner6_container.pack(side="right")
+
+        ###Create user guide page
+        self.pdf_container = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color) #### Create a frame to the pdf viewer
+        self.user_guide_pdf = pdf.ShowPdf()
+        self.user_guide_view = self.user_guide_pdf.pdf_view(self.pdf_container, pdf_location=user_guide_path, width=300, height=300)
+        self.user_guide_view.pack(side="top", expand=True, fill="both")
+        self.user_guide_view.pack_propagate(0)
+        self.back_button_container1 = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color)
+        self.back_button_image = ImageTk.PhotoImage(Image.open(back_button_path).resize((225, 50)))
+        self.user_guide_back_button = tk.Button(self.back_button_container1, bg=skyblue, foreground=bg_color, image=self.back_button_image, width=223, height=48,
+                                            font=title_font, bd=0, command=self.hide_guide)  #### Create cancel button on employee adding frame
+        self.user_guide_back_button.pack(side="left")
 
         ## Create elements in tab 2
         self.work_screen.tabs[1].tab_button.configure(text = "Employees")                   ### Configure the Employees tab name and attributes
@@ -267,7 +278,7 @@ class Window:
 
         #### Add a field for the employee's payment type
         self.emp_payment = tk.StringVar()
-        self.payment_types = ["Hourly", "Salaried", "Commissioned", "Unknown"]
+        self.payment_types = ["Hourly", "Salaried", "Commissioned"]
         self.emp_line3_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
         self.emp_line3_container.pack(pady=self.emp_entries_spacing, fill="x")
         self.emp_payment_label = tk.Label(self.emp_line3_container, font=basic_font, bg=bg_color2, text="Payment Type:", fg='black')
@@ -352,22 +363,17 @@ class Window:
         self.emp_account = tk.StringVar()
         self.emp_line8_container = tk.Frame(self.emp_entries_frame, bg=bg_color2)
         self.emp_line8_container.pack(pady=self.emp_entries_spacing, fill="x")
-        self.emp_account_label = tk.Label(self.emp_line8_container, font=basic_font, bg=bg_color2, text="Accounting Number:", fg='black')
+        self.emp_account_label = tk.Label(self.emp_line8_container, font=basic_font, bg=bg_color2, text="Account Number:", fg='black')
         self.emp_account_label.pack(side="left", fill="x")
         self.emp_account_entry = tk.Entry(self.emp_line8_container, textvariable=self.emp_account,
                                             font=basic_font, bg=bg_color, fg='black', width=35)
         self.emp_account_entry.pack(side="left", fill="x")
-
-        #self.emp_payment_type_optionlist.bind("<Return>", self.update_working_employee)
-        #self.emp_f_name_entry.bind("<Return>", self.update_working_employee)
-        #self.emp_salary_entry.bind("<Return>", self.update_working_employee)
-        #self.emp_address_entry.bind("<Return>", self.update_working_employee)
         
         #Set the show/hide for each screen for the intial view when the application is launched
         self.login_screen.hide()
         self.adding_emp_frame.pack_forget()    # Hide the adding frame
         self.work_screen.show()
-        self.work_screen.tabs[0].show_body()   # Show the tab 1 body
+        self.work_screen.tabs[0].show_body()   # Show the tab 0 body as initial view upon login
         #self.login_screen.show()
         #self.work_screen.hide()
 
@@ -385,13 +391,32 @@ class Window:
         """
         Ends the program
         """
+        self.check_entry_changes() # Check for any changes to employees that need to be saved
         self.Controller.on_exit()   # Let the controller know the GUI is about to be closed, save anything necessary
         self.root.destroy()      # When the user closes the program destroy the root window
+
+    def show_guide(self):
+        """
+        Show the user guide.
+        """
+        self.record_buttons_frame.place_forget()
+        self.pdf_container.pack(expand=True, fill="both", padx=50, pady=(50,10))
+        self.pdf_container.pack_propagate(0)
+        self.back_button_container1.pack(side="bottom", fill="both", padx=(50,0), pady=(10,50))
+
+    def hide_guide(self):
+        """
+        Hide the user guide when back button is pressed.
+        """
+        self.record_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
+        self.pdf_container.pack_forget()
+        self.back_button_container1.pack_forget()
 
     def add(self):
         """
         Set view such that it is clear to the user that a new employee is being created
         """
+        self.check_entry_changes() # Check for any changes to employees that need to be saved
         self.emp_box['state'] = tk.DISABLED
         self.manage_emp_frame.pack_forget()    # Hide the managing frame
         self.adding_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))    # Show the adding frame
@@ -402,6 +427,7 @@ class Window:
         """
         Delete the currently selected employee from the database
         """
+        self.check_entry_changes() # Check for any changes to employees that need to be saved
         if not self.emp_box.curselection(): return   # Check if anything in the emp box is currently selected/highlighted
         self.confirm_result = False
         Confirmation(self.root, self, "Delete this employee?", self.colors[self.color_index])   # Confirm changes
@@ -418,33 +444,102 @@ class Window:
         """
         Add a new employee to the database
         """
-        blank = empClass.Employee() # Create empty employee object
         new_emp_info = self.get_emp_entry_info().split(",")
         
+        #Verify that no field is empty
+        if True in [i=="" for i in new_emp_info]:
+            Notice(self.root, "Field(s) cannot be empty.", self.colors[self.color_index])
+            return
+
+        #Determine classification and verify
+        classify = {"Hourly": 1, "Salaried": 2, "Commissioned": 3}
+        if new_emp_info[3] not in classify.keys():
+            Notice(self.root, "Must select payment type.", self.colors[self.color_index])
+            return
+
+        #Verify city
+        if True in [char.isdigit() for char in new_emp_info[8]]:
+            Notice(self.root, "City cannot contain numbers.", self.colors[self.color_index])
+            return
+
+        #Verify state
+        new_emp_info[9] = new_emp_info[9].upper() # Set the state input to be captial letters
+        valid_states = [
+        'AL','AK','AS','AZ','AR','CA','CO','CT','DE','DC','FM','FL','GA',
+        'GU','HI','ID','IL','IN','IA','KS','KY','LA','ME','MH','MD','MA',
+        'MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND',
+        'MP','OH','OK','OR','PW','PA','PR','RI','SC','SD','TN','TX','UT',
+        'VT','VI','VA','WA','WV','WI','WY'
+        ]
+        if new_emp_info[9] not in valid_states:
+            Notice(self.root, "Please enter a valid state.", self.colors[self.color_index])
+            return
+
+        #Verify zipcode
+        if not new_emp_info[10].isnumeric():
+            Notice(self.root, "Zip must only contain numbers.", self.colors[self.color_index]) ## Check for only numbers
+            return
+        if not len(new_emp_info[10]) == 5:
+            Notice(self.root, "Zip must be 5 characters long.", self.colors[self.color_index]) ## Check for 5 char length
+            return
+
+        #Verify salary
+        new_emp_info[4].replace(",", "")
+        new_emp_info[4].replace("$", "")
+        had_decimal = False
+        if len(new_emp_info[4]) >= 3 and new_emp_info[4][-3] == ".": had_decimal = True   # Check for a decimal at the right spot
+        new_emp_info[4] = new_emp_info[4][:-3] + new_emp_info[4][-2:]   # Remove the decimal from the string
+        if not new_emp_info[4].isnumeric():
+            Notice(self.root, "Please enter a vaild salary.", self.colors[self.color_index])
+            return
+        if had_decimal: new_emp_info[4] = new_emp_info[4][:-2] + "." + new_emp_info[4][-2:]   # Add decimal back in
+        if not had_decimal: new_emp_info[4] += ".00" # Add cents if it wasn't included
+
+        #Verify hourly
+        new_emp_info[5].replace(",", "")
+        new_emp_info[5].replace("$", "")
+        had_decimal = False
+        if len(new_emp_info[5]) >= 3 and new_emp_info[5][-3] == ".": had_decimal = True   # Check for a decimal at the right spot
+        new_emp_info[5] = new_emp_info[5][:-3] + new_emp_info[5][-2:]   # Remove the decimal from the string
+        if not new_emp_info[5].isnumeric():
+            Notice(self.root, "Please enter a vaild hourly rate.", self.colors[self.color_index])
+            return
+        if had_decimal: new_emp_info[5] = new_emp_info[5][:-2] + "." + new_emp_info[5][-2:]   # Add decimal back in
+        if not had_decimal: new_emp_info[5] += ".00" # Add cents if it wasn't included
+
+        #Verify commission
+        if not new_emp_info[6].isnumeric():
+            Notice(self.root, "Commission must only contain numbers.", self.colors[self.color_index])
+            return
+
+    
         #Generate new id
         id_list = []
         new_id = None
         for employee in self.Controller.request_employees():
             id_list.append(employee.emp_id)
         while (new_id := random.randrange(100000, 999999)) in id_list: pass
-        
-        #Add information to the employee object
-        blank.emp_id = new_id   # Assign the blank employee an ID that is not already taken
-        blank.f_name = new_emp_info[0]
-        blank.l_name = new_emp_info[1]
-        blank.address = new_emp_info[7]
-        blank.city = new_emp_info[8]
-        blank.state = new_emp_info[9]
-        blank.zipcode = new_emp_info[10]
-        blank.classification = new_emp_info[3]
-        blank.AccountNumber = new_emp_info[12]
-        blank.RoutingNumber = new_emp_info[11]
-        blank.hourly = new_emp_info[5]
-        blank.salary = new_emp_info[4]
-        blank.commission = new_emp_info[6]
 
-        self.Controller.add_employee(blank) # Add the employee
+        # Create the new employee object
+        new_emp = empClass.Employee(
+            emp_id = new_id,
+            Class = classify[new_emp_info[3]],
+            f_name = new_emp_info[0],
+            l_name = new_emp_info[1],
+            address = new_emp_info[7],
+            city = new_emp_info[8],
+            state = new_emp_info[9],
+            zipcode = new_emp_info[10],
+            account = new_emp_info[12],
+            route = new_emp_info[11],
+            hourly = new_emp_info[5],
+            salary = new_emp_info[4],
+            commission = new_emp_info[6]
+        )
+
+        self.Controller.add_employee(new_emp) # Add the employee to the database
         print(self.request_employees())
+        
         #Update the GUI
         self.full_list = self.request_employees()
         self.visible_list = self.request_employees()   # Update the visible list of employees
@@ -502,22 +597,27 @@ class Window:
             name = data.split()   # Save the name found in the scroll list of employees
 
             if index != self.last_selected:   # If a different employee is being selected
-
-                #if self.Controller.isAdmin(user):
-                selected_emp_info = self.get_emp_entry_info()
-                if self.last_selected_emp_info != selected_emp_info and self.last_selected != -1:   # If changes were made in the entry fields
-                    self.confirm_result = False
-                    Confirmation(self.root, self, "Save changes to this employee?", self.colors[self.color_index])   # Confirm changes
-                    if self.confirm_result:
-                        #self.Controller.update_employee(selected_emp_info)
-                        pass
-
+                self.check_entry_changes() # Check for any changes to employees that need to be saved
                 self.set_fields_as_selected(name)   # Update fields
 
                 #Remember this selection for the next select event
                 self.last_selected_emp_info = self.get_emp_entry_info()
                 self.last_selected = self.emp_box.curselection()[0]
 
+    def check_entry_changes(self):
+        """
+        Checks to see if any changes were made to an employee that is selected.
+        Prompts the user to save changes. Then saves changes accordingly.
+        """
+        #if self.Controller.isAdmin(user):
+        selected_emp_info = self.get_emp_entry_info()
+        if self.last_selected_emp_info != selected_emp_info and self.last_selected != -1:   # If changes were made in the entry fields
+            self.confirm_result = False
+            Confirmation(self.root, self, "Save changes to this employee?", self.colors[self.color_index])   # Confirm changes
+            if self.confirm_result:
+                #self.Controller.update_employee(selected_emp_info)
+                pass
+    
     def set_fields_as_selected(self, name):
         """
         Receive an employee name as a string. A list of employee objects will be searched to find the correct employee object.
@@ -825,7 +925,7 @@ class Popup(tk.Toplevel):
         self.transient(master)   # Set the popup to be on top of the main window
         self.grab_set()   # Ignore clicks in the main window while the popup is open
         self.protocol("WM_DELETE_WINDOW", self.close)   # Call self.close when the exit button is clicked
-        self.width = 350   # Set popup dimensions and show in the center of the screen
+        self.width = 375   # Set popup dimensions and show in the center of the screen
         self.height = 100
         self.geometry("{}x{}+{}+{}".format(self.width, self.height,
                                             int(master.winfo_screenwidth()/2 - self.width/2),
