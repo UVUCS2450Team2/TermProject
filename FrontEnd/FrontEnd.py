@@ -153,20 +153,20 @@ class Window:
         self.work_screen.tabs[0].show_body()   # Show the tab 0 body as initial view upon login
         self.dashboard_buttons_frame = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color) ### Create a frame to hold the buttons
         self.dashboard_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
-        self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 185)))
+        self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 93)))
         self.payroll_button = tk.Button(self.dashboard_buttons_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
-                                        bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=183,
+                                        bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=91,
                                         command=self.payroll_button_click)
         self.payroll_button.pack(padx=100, pady=(50,20))
-        self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 185)))
+        self.user_guide_button_image = ImageTk.PhotoImage(Image.open(user_guide_button_path).resize((740, 93)))
         self.user_guide_button = tk.Button(self.dashboard_buttons_frame, image=self.user_guide_button_image, ### Create a button for user guide from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, 
-                                        width=738, height=183, command=self.show_guide)
+                                        width=738, height=91, command=self.show_guide)
         self.user_guide_button.pack(padx=100, pady=(0,20))
-        self.logout_button_image = ImageTk.PhotoImage(Image.open(logout_button_path).resize((740, 185)))
+        self.logout_button_image = ImageTk.PhotoImage(Image.open(logout_button_path).resize((740, 93)))
         self.logout_button = tk.Button(self.dashboard_buttons_frame, image=self.logout_button_image, ### Create a button for logout from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, 
-                                        width=738, height=183, command=self.logout)
+                                        width=738, height=91, command=self.logout)
         self.logout_button.pack(padx=100, pady=(0,50))
 
         if not isMAC():
@@ -821,7 +821,8 @@ class Window:
             self.user_guide_button,
             self.emp_add_btn,
             self.emp_delete_btn,
-            self.emp_pic_container
+            self.emp_pic_container,
+            self.logout_button
         ]
         self.color_index = (self.color_index + 1) % len(self.colors)
         for container in colored_image_containers:
