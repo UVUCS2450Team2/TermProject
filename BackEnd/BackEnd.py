@@ -471,7 +471,7 @@ class BackendImplementation:
             self.USER_DICT[user].Dump()
 
     def is_admin(self):
-            return self.ActiveUser.isAdmin
+            return self.ActiveUser.Admin
 
 def main():
         """

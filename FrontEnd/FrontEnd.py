@@ -408,7 +408,7 @@ class Window:
             self.password.set("")
             
             #Hide various widgets based on user permissions
-            if not is_admin():#if not self.Controller.is_admin():
+            if not self.Controller.is_admin():
                 self.manage_emp_frame.pack_forget()
                 self.emp_routing_entry['state'] = tk.DISABLED
                 self.emp_account_entry['state'] = tk.DISABLED
@@ -695,7 +695,7 @@ class Window:
         Prompts the user to save changes. Then saves changes accordingly.
         Returns true if an employee was updated.
         """
-        if is_admin():#if self.Controller.is_admin():
+        if self.Controller.is_admin():
             selected_emp_info = self.get_emp_entry_info()
             if self.last_selected_emp_info != selected_emp_info and self.last_selected != -1:   # If changes were made in the entry fields
                 self.work_screen.focus_tab(self.work_screen.tabs[1]) # Make sure the correct tab is in focus
@@ -717,7 +717,7 @@ class Window:
         if self.current_working_employee is None: return
 
         #Update fields based on permissions
-        if is_admin():#if self.Controller.is_admin():
+        if self.Controller.is_admin():
             self.emp_routing.set(self.current_working_employee.RoutingNumber)
             self.emp_account.set(self.current_working_employee.AccountNumber)
             self.emp_salary.set(self.current_working_employee.salary)
