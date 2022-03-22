@@ -47,6 +47,7 @@ class BasicControlller(ApplicationInterface):
             This function takes as parameters an employee object and adds its to the database in the backend
         """
         return self.Backend.AddEmployee(emp)
+        #self.Backend.SaveEmployees()
 
     def update_employee(self, empID, emp):
         """
