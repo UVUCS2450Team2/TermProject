@@ -71,6 +71,14 @@ class Employee:
         self.commission = commission
         self.paymethod = method
         self.Class = Class
+
+        if Class == 1:
+            self.make_hourly(hourly)
+        elif Class == 2:
+            self.make_salaried(salary)
+        elif Class == 3:
+            self.make_commissioned(salary, commission)
+
     def make_hourly(self, rate):
         '''This function makes an employees classification hourly'''
         self.classification = Hourly(rate)
@@ -111,6 +119,11 @@ class Classification:
     def compute_pay(self):
         '''This function is passed on to the child class'''
         pass
+
+    def asString(self):
+        """Identifies a classification as a string"""
+        pass
+
 class Hourly(Classification):
     '''This Classification is for Hourly employees'''
     def __init__(self, hourly_rate):
@@ -128,9 +141,18 @@ class Hourly(Classification):
         total = 0
         for hours in self.timecard:
             total_hours_worked += hours
-        self.timecard = []
+        #self.timecard = []
         total += round(total_hours_worked * float(self.hourly_rate), 2)
         return total
+    def asString(self):
+        '''Returns a string identifying the employees class'''
+        return "Hourly"
+        employee_type = "Hourly"
+        if isinstance(Employee, Hourly):
+            return employee_type
+        else:
+            print("Wrong employee type")
+
 class Salaried(Classification):
     '''This is the classification of a salaried employee'''
     def __init__(self, salary):
@@ -141,6 +163,15 @@ class Salaried(Classification):
         total = 0
         total += round(self.salary / 24, 2)
         return total
+    def asString(self):
+        '''Returns a string identifying the employees class'''
+        return "Salaried"
+        employee_type = "Salaried"
+        if isinstance(Employee, Salaried):
+            return employee_type
+        else:
+            print("Wrong employee type")
+
 class Commissioned(Salaried):
     '''This is the Classification of an employee who is Commissioned'''
     def __init__(self, salary, percentage):
@@ -148,8 +179,9 @@ class Commissioned(Salaried):
             the Salary Class
         '''
         super().__init__(salary)
-        self.receipt = []
+        #self.receipt = []
         self.percentage = percentage
+        self.receipt = []
     def compute_pay(self):
         '''This funciton computes the pay of a commissioned employee
             by processing their receipts
@@ -164,3 +196,11 @@ class Commissioned(Salaried):
     def add_receipt(self, receipt):
         '''This function adds a receipt to a list'''
         self.receipt.append(receipt)
+    def asString(self):
+        '''Returns a string identifying the employees class'''
+        return "Commissioned"
+        employee_type = "Commissioned"
+        if isinstance(Employee, Commissioned):
+            return employee_type
+        else:
+            print("Wrong employee type")
