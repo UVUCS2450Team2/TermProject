@@ -4,7 +4,7 @@ Requirements:
     -Tkinter module
     -Pillow module
 
-Please ensure you have the following modules are installed!
+Please ensure you have the following modules installed!
 Tkinter         pip install tkinter
 Pillow          pip install pillow
 tkPDFViewer     pip install tkPDFViewer
