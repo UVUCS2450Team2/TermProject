@@ -79,5 +79,8 @@ class BasicControlller(ApplicationInterface):
         return self.Backend.is_admin()
 
     def on_exit(self):
+        """
+            The event that allows the backend to wrap up any data for a safe program exitting.
+        """
         return
 
