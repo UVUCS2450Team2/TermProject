@@ -422,6 +422,9 @@ class Window:
                 self.emp_state_entry['state'] = tk.DISABLED
                 self.emp_zip_entry['state'] = tk.DISABLED
                 self.emp_payment_type_optionlist['state'] = tk.DISABLED
+                self.payroll_button.pack_forget()
+                self.user_guide_button.pack(padx=100, pady=(0,20))
+                self.logout_button.pack(padx=100, pady=(0,50))
             else:
                 self.manage_emp_frame.pack(side='left', expand=True, fill='both', padx=(25,0), pady=(0,25))
                 self.emp_routing_entry['state'] = tk.NORMAL
@@ -436,6 +439,12 @@ class Window:
                 self.emp_state_entry['state'] = tk.NORMAL
                 self.emp_zip_entry['state'] = tk.NORMAL
                 self.emp_payment_type_optionlist['state'] = tk.NORMAL
+                self.payroll_button.pack_forget()
+                self.user_guide_button.pack_forget()
+                self.logout_button.pack_forget()
+                self.payroll_button.pack(padx=100, pady=(50,20))
+                self.user_guide_button.pack(padx=100, pady=(0,20))
+                self.logout_button.pack(padx=100, pady=(0,50))
                 
             self.login_screen.hide()    # Hide the login page
             self.work_screen.show()     # Show the work screen
