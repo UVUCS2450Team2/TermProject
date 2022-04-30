@@ -833,7 +833,8 @@ class Window:
             self.emp_pic_container,
             self.logout_button,
             self.confirm_emp_btn,
-            self.cancel_emp_btn
+            self.cancel_emp_btn,
+            self.user_guide_back_button
         ]
         self.color_index = (self.color_index + 1) % len(self.colors)
         for container in colored_image_containers:
