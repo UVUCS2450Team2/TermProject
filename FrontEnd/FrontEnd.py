@@ -671,7 +671,12 @@ class Window:
         search_string = event.widget.get()  # Get the current contents of the search box
         self.visible_list = []      # Create an empty array that will be populated with employees that match the search
         for i in self.full_list:
-            if search_string.lower()[:len(search_string)] == i.lower()[:len(search_string)]:
+            if "." in i:
+                lastname = i.split(".")[-1].lower()
+            else:
+                lastname = i.split(" ")[-1].lower()
+            if (search_string.lower()[:len(search_string)] == i.lower()[:len(search_string)] or 
+            search_string.lower()[:len(search_string)] == lastname[:len(search_string)]):
                 self.visible_list.append(i)     # If an employee is found that matches the search, add it to the array
         self.update_search_listbox()    # Update the search listbox with the list of found employee matching the search
 
