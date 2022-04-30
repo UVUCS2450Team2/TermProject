@@ -70,3 +70,9 @@ class ApplicationInterface:
             This function asks the backend if the current logged in user is an admin, this is used to verify rights and show particular views
         """
         pass
+
+    def SAVE(self):
+        """
+            This function saves employee data!
+        """
+        pass

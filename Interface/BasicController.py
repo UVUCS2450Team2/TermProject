@@ -82,5 +82,6 @@ class BasicControlller(ApplicationInterface):
         """
             The event that allows the backend to wrap up any data for a safe program exitting.
         """
-        return
+
+        return self.Backend.SaveEmployees()
 
