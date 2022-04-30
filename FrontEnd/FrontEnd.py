@@ -37,6 +37,7 @@ cancel_button_path = folder_path+"cancel_button.PNG"
 back_button_path = folder_path+"back_button.PNG"
 logout_button_path = folder_path+"logout_button.PNG"
 user_guide_path = folder_path+"user_guide.pdf"
+help_button_path = folder_path+"help_icon.PNG"
 bg_color  = "white"
 bg_color2 = "#D7D8D9"
 skyblue = "#3bc3f1"
@@ -147,12 +148,24 @@ class Window:
         self.work_screen = TabFrame(self.main_frame, 2) # Create x tabs in the tabs frame
 
         ## Create elements in tab 1, this will be the open tab upon logging in
+
         self.work_screen.tabs[0].tab_button.configure(text = "Dashboard")
         self.work_screen.tabs[0].body_frame = tk.Frame(self.work_screen.body_frame, bg=bg_color)    ### Configure the Dashboard tab name and attributes
         self.work_screen.tabs[0].body_frame.pack(expand=True, fill="both")
         self.work_screen.tabs[0].show_body()   # Show the tab 0 body as initial view upon login
         self.dashboard_buttons_frame = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color) ### Create a frame to hold the buttons
         self.dashboard_buttons_frame.place(relx=0.5, rely=0.5, anchor='c')  ## Center/Center the frame holding the buttons
+
+        ### Create help button
+        self.dashboard_help_frame = tk.Frame(self.work_screen.tabs[0].body_frame, bg=bg_color)
+        self.dashboard_help_frame.place(relx=0.97, rely=0.05, anchor='ne')
+        self.help_button_image = ImageTk.PhotoImage(Image.open(help_button_path).resize((45,34)))
+        self.help_button_t1 = tk.Button(self.dashboard_help_frame, image=self.help_button_image,
+                                     foreground=bg_color, activebackground=bg_color, width=29, height=29,
+                                    command=self.help_button_click_t1)
+        self.help_button_t1.pack(anchor='ne')
+
+        ### Create other buttons
         self.payroll_button_image = ImageTk.PhotoImage(Image.open(payroll_button_path).resize((740, 93)))
         self.payroll_button = tk.Button(self.dashboard_buttons_frame, image=self.payroll_button_image,   ### Create a button for payroll from image
                                         bg=skyblue, bd=0, foreground=bg_color, activebackground=bg_color, width=738, height=91,
@@ -196,6 +209,7 @@ class Window:
         self.work_screen.tabs[1].hide_body()    ### Hide the employees tab because the default tab is the first tab
         
         ### Tab 2 Left
+
         self.listbox_frame = tk.Frame(self.work_screen.tabs[1].body_frame.left_frame, bg=bg_color2) #### Create a listbox frame on the left frame of the employees tab
         self.listbox_frame.pack(fill="both", expand=True, padx=(25,0), pady=(25,25))
         self.listbox_frame.pack_propagate(0)
@@ -255,6 +269,14 @@ class Window:
         self.emp_entries_frame = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color)  ### Create container for all the entires on the right
         self.emp_entries_frame.pack(side="top", expand=True, fill="both", padx=25, pady=(0,25))
         self.emp_entries_spacing = 7
+
+        ### Create help button
+        self.employee_help_frame = tk.Frame(self.work_screen.tabs[1].body_frame.right_frame, bg=bg_color)
+        self.employee_help_frame.place(relx=0.94, rely=0.05, anchor='ne')
+        self.help_button_t2 = tk.Button(self.employee_help_frame, image=self.help_button_image,
+                                      foreground=bg_color, activebackground=bg_color, width=29, height=29,
+                                      command=self.help_button_click_t2)
+        self.help_button_t2.pack(anchor='ne')
 
         ####Add a field for the employee's first name
         self.emp_f_name = tk.StringVar()
@@ -467,6 +489,12 @@ class Window:
         self.work_screen.hide()     # Hide the work screen
         self.login_screen.show()    # Show the login page
     
+    def help_button_click_t1(self):
+        Help(self.root, "Please see the dashbord tab section of the user manual", self.colors[self.color_index])   # Display help screen    
+
+    def help_button_click_t2(self):
+        Help(self.root, "Please see the employee tab section of the user manual", self.colors[self.color_index])
+
     def show_guide(self):
         """
         Show the user guide.
@@ -1023,7 +1051,7 @@ class Popup(tk.Toplevel):
     """
     This class creates and controls popup messages in the program
     """
-    def __init__(self, master, message):
+    def __init__(self, master, message, width=375, height=100):
         """
         Initialize and display the popup
         """
@@ -1032,8 +1060,8 @@ class Popup(tk.Toplevel):
         self.transient(master)   # Set the popup to be on top of the main window
         self.grab_set()   # Ignore clicks in the main window while the popup is open
         self.protocol("WM_DELETE_WINDOW", self.close)   # Call self.close when the exit button is clicked
-        self.width = 375   # Set popup dimensions and show in the center of the screen
-        self.height = 100
+        self.width = width   # Set popup dimensions and show in the center of the screen
+        self.height = height
         self.geometry("{}x{}+{}+{}".format(self.width, self.height,
                                             int(master.winfo_screenwidth()/2 - self.width/2),
                                             int(master.winfo_screenheight()/2 - self.height/2)))
@@ -1063,6 +1091,26 @@ class Popup(tk.Toplevel):
         """
         self.destroy()
 
+class Help(Popup):
+    """
+    This class creates a help popup that displays the user manual and acknowledgement button
+    """
+    def __init__(self, master, message, color):
+        """
+        Initialize and show the popup
+        """
+        super().__init__(master, message, width=800, height=500)
+        self.okay_button = tk.Button(self.main_frame, text="Okay", bg=color, bd=0,
+                                    foreground=bg_color, font=basic_font, command=self.close, fg='black') # A button to close the notice
+        self.okay_button.pack(side="bottom", pady=5)
+        self.pdf_container = tk.Frame(self.main_frame, bg=bg_color) #### Create a frame to the pdf viewer
+        self.user_guide_pdf = pdf.ShowPdf()
+        self.user_guide_view = self.user_guide_pdf.pdf_view(self.pdf_container, pdf_location=user_guide_path, width=300, height=300)
+        self.user_guide_view.pack(side="top", expand=True, fill="both")
+        self.user_guide_view.pack_propagate(0)
+        self.pdf_container.pack(expand=True, fill="both", padx=50, pady=(50,10))
+        self.pdf_container.pack_propagate(0)
+        self.wait()
 
 class Notice(Popup):
     """
